@@ -12,10 +12,16 @@ struct ContentView: View {
         NavigationStack {
             VStack {
                 Text("咳記録アプリ")
-                    .font(.largeTitle)
+                    .font(.system(size: 60))
                     .padding()
                 NavigationLink(destination: InputFormView()) {
                     Text("スタート")
+                        .padding()
+                        .font(.system(size: 40))
+                        .frame(width: 300)
+                        .foregroundColor(.white)
+                        .background(Color.blue)
+                        .cornerRadius(10)
                 }
                 .padding()
                 
