@@ -12,7 +12,8 @@ struct RecordingView: View {
     
     @State private var countdown: Int = 3
     @State private var showRecordingUI = false
-    let audioRecorder = AudioRecorder() // 録音処理クラスを使う
+    @State private var micPulse = false // マイクのアニメーションオンオフを管理
+    let audioRecorder = AudioRecorder()
     
     var body: some View {
         VStack {
@@ -20,7 +21,22 @@ struct RecordingView: View {
                 Spacer()
                 Text("録音中")
                     .font(.system(size: 60))
-                    .padding()
+                    .foregroundColor(.white)
+                    .padding(32)
+                    .background(Color.red)
+                    .cornerRadius(100)
+                
+                Spacer()
+                Image(systemName: "mic.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 200, height: 200)
+                    .foregroundColor(.red)
+                    .scaleEffect(micPulse ? 1.1 : 1.0)
+                    .animation(
+                        .easeInOut(duration: 1.0).repeatForever(autoreverses: true),
+                        value: micPulse
+                    )
                 Spacer()
                 HStack {
                     Button(action: {
@@ -45,7 +61,7 @@ struct RecordingView: View {
                     .foregroundColor(.white)
                     .cornerRadius(10)
                 }
-                
+                .padding()
                 
             } else {
                 Spacer()
@@ -79,7 +95,14 @@ struct RecordingView: View {
             } else {
                 timer.invalidate()
                 showRecordingUI = true // カウント終了後に自動画面変化
+                startMicAnimation()
             }
+        }
+    }
+    
+    func startMicAnimation() {
+        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            micPulse.toggle()
         }
     }
 }
