@@ -28,29 +28,30 @@ struct PreRecordingView: View {
             Spacer()
             
             HStack {
-                            Button(action: {
-                                dismiss()
-                            }) {
-                                Text("戻る")
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 60)
-                                    .font(.system(size: 40))
-                                    .padding()
-                                    .background(Color.gray.opacity(0.2))
-                                    .cornerRadius(10)
-                            }
-
-                            NavigationLink(destination: RecordingView()) {
-                                Text("録音開始")
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 60)
-                                    .font(.system(size: 40))
-                                    .padding()
-                                    .background(Color.blue)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(10)
-                            }
-                        }
+                Button(action: {
+                    dismiss()
+                }) {
+                    Text("戻る")
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .font(.system(size: 40))
+                        .padding()
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(10)
+                }
+                
+                NavigationLink(destination: RecordingView()) {
+                    Text("録音開始")
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .font(.system(size: 40))
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+            }
+            .padding()
         }
         .navigationBarBackButtonHidden(true)
     }
