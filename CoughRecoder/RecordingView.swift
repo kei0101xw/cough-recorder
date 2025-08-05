@@ -13,6 +13,8 @@ struct RecordingView: View {
     @State private var countdown: Int = 3
     @State private var showRecordingUI = false
     @State private var micPulse = false // マイクのアニメーションオンオフを管理
+    @State private var navigateToNext = false
+    
     let audioRecorder = AudioRecorder()
     
     var body: some View {
@@ -50,8 +52,13 @@ struct RecordingView: View {
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(10)
                     }
+                    NavigationLink(destination: RecordingReviewView(), isActive: $navigateToNext) {
+                        EmptyView()
+                    }
+                    .hidden()
                     Button("録音完了") {
                         audioRecorder.stopRecording()
+                        navigateToNext = true
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 60)
