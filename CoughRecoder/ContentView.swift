@@ -9,13 +9,26 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack {
+            VStack {
+                Text("咳記録アプリ")
+                    .font(.largeTitle)
+                    .padding()
+                NavigationLink(destination: InputFormView()) {
+                    Text("スタート")
+                }
+                .padding()
+                
+                HStack {
+                    NavigationLink(destination: SettingsView()) {
+                        Text("設定")
+                    }
+                    NavigationLink(destination: CoughLogView()) {
+                        Text("咳記録ログ")
+                    }
+                }
+            }
         }
-        .padding()
     }
 }
 
