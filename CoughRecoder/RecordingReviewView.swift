@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct RecordingReviewView: View {
-    @Environment(\.dismiss) var dismiss
+    @Binding var navigationPath: [String]
+    
     var body: some View {
         VStack {
             Text("録音の確認")
@@ -37,7 +38,11 @@ struct RecordingReviewView: View {
             
             HStack {
                 Button(action: {
-                    dismiss()
+                    if navigationPath.count >= 2 {
+                        navigationPath.removeLast(2)
+                    } else {
+                        navigationPath.removeAll()
+                    }
                 }) {
                     Text("やり直す")
                         .frame(maxWidth: .infinity)
@@ -48,7 +53,9 @@ struct RecordingReviewView: View {
                         .cornerRadius(10)
                 }
                 
-                NavigationLink(destination: RecordingView()) {
+                Button(action: {
+                    navigationPath.removeAll()
+                }) {
                     Text("録音完了")
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
@@ -66,5 +73,5 @@ struct RecordingReviewView: View {
 }
 
 #Preview {
-    RecordingReviewView()
+    RecordingReviewView(navigationPath: .constant([]))
 }
