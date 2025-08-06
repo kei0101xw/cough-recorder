@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State var navigationPath: [String] = []
+    
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             VStack {
                 Spacer()
                 Text("咳記録アプリ")
@@ -18,7 +20,9 @@ struct ContentView: View {
                 Spacer()
                 
                 HStack {
-                    NavigationLink(destination: InputFormView()) {
+                    Button {
+                        navigationPath.append("InputForm")
+                    } label: {
                         VStack {
                             Spacer()
                             Text("録音する")
@@ -42,8 +46,11 @@ struct ContentView: View {
                         .cornerRadius(10)
                     }
                     .padding()
+                    
                     VStack {
-                        NavigationLink(destination: CoughLogView()) {
+                        Button {
+                            navigationPath.append("CoughLog")
+                        } label: {
                             VStack {
                                 Text("咳記録ログ")
                                     .font(.system(size: 50))
@@ -63,7 +70,10 @@ struct ContentView: View {
                             )
                             .cornerRadius(10)
                         }
-                        NavigationLink(destination: SettingsView()) {
+                        
+                        Button {
+                            navigationPath.append("Settings")
+                        } label: {
                             VStack {
                                 Text("設定")
                                     .font(.system(size: 50))
@@ -86,6 +96,24 @@ struct ContentView: View {
                     }
                 }
                 Spacer()
+            }
+            .navigationDestination(for: String.self) { value in
+                switch value {
+                case "InputForm":
+                    InputFormView(navigationPath: $navigationPath)
+                case "CoughLog":
+                    CoughLogView(navigationPath: $navigationPath)
+                case "Settings":
+                    SettingsView(navigationPath: $navigationPath)
+                case "PreRecording":
+                    PreRecordingView(navigationPath: $navigationPath)
+                case "Recording":
+                    RecordingView(navigationPath: $navigationPath)
+                case "RecordingReview":
+                    RecordingReviewView(navigationPath: $navigationPath)
+                default:
+                    EmptyView()
+                }
             }
         }
     }

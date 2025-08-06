@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Binding var navigationPath: [String]
+    
     var body: some View {
         Text("設定画面です")
     }
 }
 
 #Preview {
-    SettingsView()
+    SettingsView(navigationPath: .constant([]))
 }

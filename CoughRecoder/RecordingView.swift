@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct RecordingView: View {
-    @Environment(\.dismiss) var dismiss
+    @Binding var navigationPath: [String]
     
     @State private var countdown: Int = 3
     @State private var showRecordingUI = false
@@ -42,7 +42,7 @@ struct RecordingView: View {
                 Spacer()
                 HStack {
                     Button(action: {
-                        dismiss()
+                        navigationPath.removeLast()
                     }) {
                         Text("やり直し")
                             .frame(maxWidth: .infinity)
@@ -52,13 +52,9 @@ struct RecordingView: View {
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(10)
                     }
-                    NavigationLink(destination: RecordingReviewView(), isActive: $navigateToNext) {
-                        EmptyView()
-                    }
-                    .hidden()
                     Button("録音完了") {
                         audioRecorder.stopRecording()
-                        navigateToNext = true
+                        navigationPath.append("RecordingReview") // 次の画面へ
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 60)
@@ -115,5 +111,5 @@ struct RecordingView: View {
 }
 
 #Preview {
-    RecordingView()
+    RecordingView(navigationPath: .constant([]))
 }

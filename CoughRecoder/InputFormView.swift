@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct InputFormView: View {
-    @Environment(\.dismiss) var dismiss
+    @Binding var navigationPath: [String]
     
     @State var name: String = ""
     @State var hospital: String = ""
@@ -44,7 +44,7 @@ struct InputFormView: View {
             
             HStack {
                 Button(action: {
-                    dismiss() // 前の画面に戻る
+                    navigationPath.removeLast() // 前の画面に戻る
                 }) {
                     Text("ホームへ戻る")
                         .frame(maxWidth: .infinity)
@@ -54,7 +54,9 @@ struct InputFormView: View {
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(10)
                 }
-                NavigationLink(destination: PreRecordingView()) {
+                Button(action: {
+                    navigationPath.append("PreRecording")
+                }) {
                     Text("次へ")
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
@@ -73,5 +75,5 @@ struct InputFormView: View {
 
 
 #Preview {
-    InputFormView()
+    InputFormView(navigationPath: .constant([]))
 }

@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct PreRecordingView: View {
-    @Environment(\.dismiss) var dismiss
+    @Binding var navigationPath: [String]
+    
     var body: some View {
         VStack {
             Text("録音を開始します")
@@ -29,7 +30,7 @@ struct PreRecordingView: View {
             
             HStack {
                 Button(action: {
-                    dismiss()
+                    navigationPath.removeLast()
                 }) {
                     Text("戻る")
                         .frame(maxWidth: .infinity)
@@ -40,7 +41,9 @@ struct PreRecordingView: View {
                         .cornerRadius(10)
                 }
                 
-                NavigationLink(destination: RecordingView()) {
+                Button(action: {
+                    navigationPath.append("Recording")
+                }) {
                     Text("録音開始")
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
@@ -58,5 +61,5 @@ struct PreRecordingView: View {
 }
 
 #Preview {
-    PreRecordingView()
+    PreRecordingView(navigationPath: .constant([]))
 }

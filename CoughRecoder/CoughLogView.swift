@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct CoughLogView: View {
+    @Binding var navigationPath: [String]
+    
     var body: some View {
         Text("咳記録ログ画面です")
     }
 }
 
 #Preview {
-    CoughLogView()
+    CoughLogView(navigationPath: .constant([]))
 }
