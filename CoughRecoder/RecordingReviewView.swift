@@ -54,7 +54,7 @@ struct RecordingReviewView: View {
                 }
                 
                 Button(action: {
-                    navigationPath.removeAll()
+                    navigationPath.append("GenderAgeForm")
                 }) {
                     Text("録音完了")
                         .frame(maxWidth: .infinity)
