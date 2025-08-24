@@ -47,8 +47,8 @@ struct RecordingView: View {
                         Text("やり直し")
                             .frame(maxWidth: .infinity)
                             .frame(height: 60)
-                            .font(.system(size: 40))
-                            .padding()
+                            .font(.system(size: 32))
+                            .padding(.horizontal)
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(10)
                     }
@@ -58,8 +58,8 @@ struct RecordingView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 60)
-                    .font(.system(size: 40))
-                    .padding()
+                    .font(.system(size: 32))
+                    .padding(.horizontal)
                     .background(Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(10)

@@ -43,8 +43,8 @@ struct PatientInfoFormView: View {
                     Text("戻る")
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
-                        .font(.system(size: 40))
-                        .padding()
+                        .font(.system(size: 32))
+                        .padding(.horizontal)
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(10)
                 }
@@ -54,8 +54,8 @@ struct PatientInfoFormView: View {
                     Text("次へ")
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
-                        .font(.system(size: 40))
-                        .padding()
+                        .font(.system(size: 32))
+                        .padding(.horizontal)
                         .background((id.isEmpty || facility.isEmpty) ? Color.blue.opacity(0.4) : Color.blue)                        .foregroundColor(.white)
                         .cornerRadius(10)
                 }
