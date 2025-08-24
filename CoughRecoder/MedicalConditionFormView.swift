@@ -10,67 +10,71 @@ import SwiftUI
 struct MedicalConditionFormView: View {
     @Binding var navigationPath: [String]
     
-    @State var gender: String = ""
-    @State var age: Int = 0
+    @State private var selectedCondition: Set<String> = []
+    
+    private let conditionOptions: [String] = [
+        "なし（健康）",
+        "インフルエンザA型",
+        "インフルエンザB型",
+        "新型コロナ",
+        "風邪",
+        "肺炎（間質性肺炎、誤嚥性肺炎、マイコプラズマ肺炎を含む）",
+        "気管支炎",
+        "結核",
+        "COPD・肺気腫",
+        "喘息"
+    ]
     
     var body: some View {
-        VStack {
-            Text("あなたの情報を入力してください")
-                .font(.system(size: 35))
+        VStack(spacing: 0) {
+            Text("現在、以下の病状はありますか？")
+                .font(.system(size: 35, weight: .regular))
+                .padding(.vertical, 12)
             
-            Form {
-                Picker("性別を選択してください", selection: $gender) {
-                    Text("男性").tag("男性")
-                    Text("女性").tag("女性")
-                    Text("その他").tag("その他")
-                }
-                .pickerStyle(.inline)
-                .padding(.vertical, 10)
-                .frame(height: 70)
-                .font(.system(size: 30))
-                
-                Section(header:
-                            Text("年齢を入力してください").font(.system(size: 30))) {
-                    HStack {
-                        TextField("年齢を入力してください", value: $age, format: .number)
-                            .keyboardType(.numberPad)
-                            .padding(.vertical, 10)
-                            .frame(height: 70)
-                            .font(.system(size: 30))
-                        
-                        Stepper("", value: $age, in: 0...120, step: 1)
-                            .labelsHidden()
+            List(selection: $selectedCondition) {
+                Section {
+                    ForEach(conditionOptions, id: \.self) { symptom in
+                        Text(symptom)
+                            .font(.system(size: 24))
+                            .padding(.vertical, 6)
                     }
-                    
+                } header: {
+                    Text("該当するものを全て選択してください")
+                        .font(.system(size: 24))
+                        .padding(EdgeInsets(top: 10, leading: 0, bottom: 10, trailing: 0))
                 }
             }
+
+            .environment(\.editMode, .constant(.active))
             
             Spacer()
             
             HStack {
                 Button(action: {
-                    navigationPath.removeLast() // 前の画面に戻る
+                    navigationPath.removeLast()
                 }) {
-                    Text("ホームへ戻る")
+                    Text("戻る")
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
-                        .font(.system(size: 40))
-                        .padding()
+                        .font(.system(size: 32))
+                        .padding(.horizontal)
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(10)
                 }
+                
                 Button(action: {
-                    navigationPath.append("PreRecording")
+                    navigationPath.removeAll()
                 }) {
-                    Text("次へ")
+                    Text("送信する（選択中: \(selectedCondition.count) 件）")
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
-                        .font(.system(size: 40))
-                        .padding()
-                        .background(Color.blue)
+                        .font(.system(size: 32, weight: .semibold))
+                        .padding(.horizontal)
+                        .background(selectedCondition.isEmpty ? Color.blue.opacity(0.4) : Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
+                .disabled(selectedCondition.isEmpty)
             }
             .padding()
         }
