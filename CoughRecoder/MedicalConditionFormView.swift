@@ -1,17 +1,11 @@
-//
-//  MedicalConditionView.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/08/24.
-//
+//  MedicalConditionFormView.swift
 
 import SwiftUI
 
 struct MedicalConditionFormView: View {
     @Binding var navigationPath: [String]
-    
-    @State private var selectedCondition: Set<String> = []
-    
+    @EnvironmentObject var session: RecordingSession
+
     private let conditionOptions: [String] = [
         "なし（健康）",
         "インフルエンザA型",
@@ -24,14 +18,14 @@ struct MedicalConditionFormView: View {
         "COPD・肺気腫",
         "喘息"
     ]
-    
+
     var body: some View {
         VStack(spacing: 0) {
             Text("現在、以下の病状はありますか？")
                 .font(.system(size: 35, weight: .regular))
                 .padding(.vertical, 12)
-            
-            List(selection: $selectedCondition) {
+
+            List(selection: $session.conditions) {
                 Section {
                     ForEach(conditionOptions, id: \.self) { symptom in
                         Text(symptom)
@@ -44,11 +38,10 @@ struct MedicalConditionFormView: View {
                         .padding(EdgeInsets(top: 10, leading: 0, bottom: 10, trailing: 0))
                 }
             }
-
             .environment(\.editMode, .constant(.active))
-            
+
             Spacer()
-            
+
             HStack {
                 Button(action: {
                     navigationPath.removeLast()
@@ -61,20 +54,21 @@ struct MedicalConditionFormView: View {
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(10)
                 }
-                
+
+                // ▼遷移先は "DementiaStatusForm" にします
                 Button(action: {
-                    navigationPath.removeAll()
+                    navigationPath.append("DementiaStatusForm")
                 }) {
-                    Text("送信する（選択中: \(selectedCondition.count) 件）")
+                    Text("次へ（選択中: \(session.conditions.count) 件）")
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
                         .font(.system(size: 32, weight: .semibold))
                         .padding(.horizontal)
-                        .background(selectedCondition.isEmpty ? Color.blue.opacity(0.4) : Color.blue)
+                        .background(session.conditions.isEmpty ? Color.blue.opacity(0.4) : Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
-                .disabled(selectedCondition.isEmpty)
+                .disabled(session.conditions.isEmpty) // 任意: 必須でなければ削除OK
             }
             .padding()
         }
@@ -84,4 +78,5 @@ struct MedicalConditionFormView: View {
 
 #Preview {
     MedicalConditionFormView(navigationPath: .constant([]))
+        .environmentObject(RecordingSession())
 }

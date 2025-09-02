@@ -10,10 +10,8 @@ import SwiftUI
 struct CurrentSymptomsFormView: View {
     @Binding var navigationPath: [String]
     
-    // 複数選択は Set で管理します（List(selection:) の必須要件）
-    @State private var selectedSymptoms: Set<String> = []
+    @EnvironmentObject var session: RecordingSession
     
-    // 選択肢（必要に応じて増減してください）
     private let symptomOptions: [String] = [
         "なし",
         "体の痛み",
@@ -33,8 +31,7 @@ struct CurrentSymptomsFormView: View {
                 .font(.system(size: 35, weight: .regular))
                 .padding(.vertical, 12)
             
-            // List(selection:) を使うと複数選択が可能（編集モードを有効化）
-            List(selection: $selectedSymptoms) {
+            List(selection: $session.symptoms) {
                 Section {
                     ForEach(symptomOptions, id: \.self) { symptom in
                         Text(symptom)
@@ -47,7 +44,6 @@ struct CurrentSymptomsFormView: View {
                         .padding(EdgeInsets(top: 10, leading: 0, bottom: 10, trailing: 0))
                 }
             }
-            // 編集モードを常時アクティブにして複数選択を有効化
             .environment(\.editMode, .constant(.active))
             
             Spacer()
@@ -68,17 +64,16 @@ struct CurrentSymptomsFormView: View {
                 Button(action: {
                     navigationPath.append("MedicalConditionForm")
                 }) {
-                    Text("次へ（選択中: \(selectedSymptoms.count) 件）")
+                    Text("次へ（選択中: \(session.symptoms.count) 件）")
                         .frame(maxWidth: .infinity)
                         .frame(height: 60)
                         .font(.system(size: 32, weight: .semibold))
                         .padding(.horizontal)
-                        .background(selectedSymptoms.isEmpty ? Color.blue.opacity(0.4) : Color.blue)
+                        .background(session.symptoms.isEmpty ? Color.blue.opacity(0.4) : Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
-                // 何も選択していない場合は無効化
-                .disabled(selectedSymptoms.isEmpty)
+                .disabled(session.symptoms.isEmpty)
             }
             .padding()
         }
@@ -88,4 +83,5 @@ struct CurrentSymptomsFormView: View {
 
 #Preview {
     CurrentSymptomsFormView(navigationPath: .constant([]))
+        .environmentObject(RecordingSession())
 }

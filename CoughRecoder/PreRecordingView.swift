@@ -62,4 +62,5 @@ struct PreRecordingView: View {
 
 #Preview {
     PreRecordingView(navigationPath: .constant([]))
+        .environmentObject(RecordingSession())
 }

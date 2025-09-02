@@ -1,22 +1,18 @@
-//
-//  CountdownView.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/08/05.
-//
-
 import SwiftUI
 
 struct RecordingView: View {
     @Binding var navigationPath: [String]
-    
+    @EnvironmentObject var session: RecordingSession
+
+    @StateObject private var audioRecorder = AudioRecorder()
+
     @State private var countdown: Int = 3
     @State private var showRecordingUI = false
-    @State private var micPulse = false // マイクのアニメーションオンオフを管理
-    @State private var navigateToNext = false
-    
-    let audioRecorder = AudioRecorder()
-    
+    @State private var micPulse = false
+    @State private var errorMessage: String?
+    @State private var showingErrorAlert = false
+    @State private var finishing = false
+
     var body: some View {
         VStack {
             if showRecordingUI {
@@ -27,7 +23,7 @@ struct RecordingView: View {
                     .padding(32)
                     .background(Color.red)
                     .cornerRadius(100)
-                
+
                 Spacer()
                 Image(systemName: "mic.fill")
                     .resizable()
@@ -35,37 +31,50 @@ struct RecordingView: View {
                     .frame(width: 200, height: 200)
                     .foregroundColor(.red)
                     .scaleEffect(micPulse ? 1.1 : 1.0)
-                    .animation(
-                        .easeInOut(duration: 1.0).repeatForever(autoreverses: true),
-                        value: micPulse
-                    )
+                    .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: micPulse)
                 Spacer()
+
                 HStack {
-                    Button(action: {
+                    Button {
+                        audioRecorder.discardAndDeleteFile()
+                        session.recordingURL = nil
                         navigationPath.removeLast()
-                    }) {
+                    } label: {
                         Text("やり直し")
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 60)
+                            .frame(maxWidth: .infinity, minHeight: 60)
                             .font(.system(size: 32))
                             .padding(.horizontal)
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(10)
                     }
-                    Button("録音完了") {
-                        audioRecorder.stopRecording()
-                        navigationPath.append("RecordingReview") // 次の画面へ
+
+                    Button {
+                        guard !finishing else { return }
+                        finishing = true
+                        audioRecorder.stopRecording { url in
+                            DispatchQueue.main.async {
+                                finishing = false
+                                if let url {
+                                    session.recordingURL = url
+                                    navigationPath.append("RecordingReview")
+                                } else {
+                                    errorMessage = "録音の保存に失敗しました。もう一度お試しください。"
+                                    showingErrorAlert = true
+                                }
+                            }
+                        }
+                    } label: {
+                        Text(finishing ? "処理中…" : "録音完了")
+                            .frame(maxWidth: .infinity, minHeight: 60)
+                            .font(.system(size: 32))
+                            .padding(.horizontal)
+                            .background(finishing ? Color.gray : Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 60)
-                    .font(.system(size: 32))
-                    .padding(.horizontal)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
                 }
                 .padding()
-                
+
             } else {
                 Spacer()
                 Text("カウントダウンが終了すると自動で録音が開始されます")
@@ -77,33 +86,42 @@ struct RecordingView: View {
                     .frame(width: 400, height: 400)
                     .background(Color.white)
                     .clipShape(Circle())
-                    .overlay(
-                        Circle()
-                            .stroke(Color.blue, lineWidth: 5)
-                    )
+                    .overlay(Circle().stroke(Color.blue, lineWidth: 5))
                 Spacer()
             }
         }
-        .onAppear {
-            startCountdown()
-        }
+        .onAppear { startCountdown() }
         .navigationBarBackButtonHidden(true)
+        .alert("録音エラー", isPresented: $showingErrorAlert) {
+            Button("OK") { navigationPath.removeLast() }
+        } message: {
+            Text(errorMessage ?? "不明なエラーです")
+        }
     }
-    
-    
-    func startCountdown() {
+
+    private func startCountdown() {
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
             if countdown > 1 {
                 countdown -= 1
             } else {
                 timer.invalidate()
-                showRecordingUI = true // カウント終了後に自動画面変化
-                startMicAnimation()
+                audioRecorder.startRecording { result in
+                    DispatchQueue.main.async {
+                        switch result {
+                        case .success:
+                            showRecordingUI = true
+                            startMicAnimation()
+                        case .failure(let err):
+                            errorMessage = err.localizedDescription
+                            showingErrorAlert = true
+                        }
+                    }
+                }
             }
         }
     }
-    
-    func startMicAnimation() {
+
+    private func startMicAnimation() {
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             micPulse.toggle()
         }
@@ -112,4 +130,5 @@ struct RecordingView: View {
 
 #Preview {
     RecordingView(navigationPath: .constant([]))
+        .environmentObject(RecordingSession())
 }

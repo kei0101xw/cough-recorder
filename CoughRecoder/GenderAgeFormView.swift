@@ -10,28 +10,26 @@ import SwiftUI
 struct GenderAgeFormView: View {
     @Binding var navigationPath: [String]
     
-    @State var gender: String = ""
-    @State var age: Int? = nil
+    @EnvironmentObject var session: RecordingSession
     
     private var ageBindingForStepper: Binding<Int> {
             Binding(
-                get: { age ?? 0 },
-                set: { age = $0 }
+                get: { session.age ?? 0 },
+                set: { session.age = $0 }
             )
         }
 
-        // TextField 用：文字列 <-> Int? を相互変換する Binding<String>
+
         private var ageTextBinding: Binding<String> {
             Binding(
-                get: { age.map(String.init) ?? "" }, // nil のときは空文字
+                get: { session.age.map(String.init) ?? "" },
                 set: { input in
-                    // 空文字なら nil、数字なら Int、範囲外や不正入力は無視
+
                     if input.isEmpty {
-                        age = nil
+                        session.age = nil
                     } else if let v = Int(input), (0...120).contains(v) {
-                        age = v
+                        session.age = v
                     }
-                    // それ以外（数字以外）は変更しない
                 }
             )
         }
@@ -42,7 +40,7 @@ struct GenderAgeFormView: View {
                 .font(.system(size: 35))
             
             Form {
-                Picker("性別を選択してください", selection: $gender) {
+                Picker("性別を選択してください", selection: $session.gender) {
                     Text("男性").tag("男性")
                     Text("女性").tag("女性")
                     Text("その他").tag("その他")
@@ -55,7 +53,7 @@ struct GenderAgeFormView: View {
                 Section(header:
                             Text("年齢を入力してください").font(.system(size: 30))) {
                     HStack {
-                        TextField("年齢を入力してください", value: $age, format: .number)
+                        TextField("年齢を入力してください", value: $session.age, format: .number)
                             .keyboardType(.numberPad)
                             .padding(.vertical, 10)
                             .frame(height: 70)
@@ -90,11 +88,11 @@ struct GenderAgeFormView: View {
                         .frame(height: 60)
                         .font(.system(size: 32))
                         .padding(.horizontal)
-                        .background((gender.isEmpty || age == nil) ? Color.blue.opacity(0.4) : Color.blue)                        .foregroundColor(.white)
+                        .background((session.gender.isEmpty || session.age == nil) ? Color.blue.opacity(0.4) : Color.blue)                        .foregroundColor(.white)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
-                .disabled(gender.isEmpty || age == nil)
+                .disabled(session.gender.isEmpty || session.age == nil)
             }
             .padding()
         }
@@ -104,4 +102,5 @@ struct GenderAgeFormView: View {
 
 #Preview {
     GenderAgeFormView(navigationPath: .constant([]))
+        .environmentObject(RecordingSession())
 }

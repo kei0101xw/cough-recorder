@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State var navigationPath: [String] = []
+    @EnvironmentObject var session: RecordingSession
     
     var body: some View {
         NavigationStack(path: $navigationPath) {
@@ -28,6 +29,7 @@ struct ContentView: View {
                 HStack {
                     Button {
                         navigationPath.append("PatientInfoForm")
+                        session.sessionReset()
                     } label: {
                         VStack {
                             Spacer()
@@ -126,6 +128,9 @@ struct ContentView: View {
                 case "MedicalConditionForm":
                     MedicalConditionFormView(navigationPath:
                         $navigationPath)
+                case "DementiaStatusForm":
+                    DementiaStatusFormView(navigationPath:
+                        $navigationPath)
                 default:
                     EmptyView()
                 }
@@ -136,4 +141,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(RecordingSession())
 }

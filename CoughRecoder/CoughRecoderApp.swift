@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct CoughRecoderApp: App {
+    @StateObject private var session = RecordingSession()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(session)
         }
     }
 }
