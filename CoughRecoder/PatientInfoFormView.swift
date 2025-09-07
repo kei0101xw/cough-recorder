@@ -64,7 +64,7 @@ struct PatientInfoFormView: View {
                 }
 
                 Button {
-                    navigationPath.append("PreRecording")
+                    navigationPath.append("GenderAgeForm")
                 } label: {
                     Text("次へ")
                         .frame(maxWidth: .infinity)

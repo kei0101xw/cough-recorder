@@ -28,7 +28,7 @@ struct ContentView: View {
                 
                 HStack {
                     Button {
-                        navigationPath.append("PatientInfoForm")
+                        navigationPath.append("PreRecording")
                         session.sessionReset()
                     } label: {
                         VStack {
@@ -107,8 +107,6 @@ struct ContentView: View {
             }
             .navigationDestination(for: String.self) { value in
                 switch value {
-                case "PatientInfoForm":
-                    PatientInfoFormView(navigationPath: $navigationPath)
                 case "CoughLog":
                     CoughLogView(navigationPath: $navigationPath)
                 case "Settings":
@@ -119,6 +117,8 @@ struct ContentView: View {
                     RecordingView(navigationPath: $navigationPath)
                 case "RecordingReview":
                     RecordingReviewView(navigationPath: $navigationPath)
+                case "PatientInfoForm":
+                    PatientInfoFormView(navigationPath: $navigationPath)
                 case "GenderAgeForm":
                     GenderAgeFormView(navigationPath:
                         $navigationPath)

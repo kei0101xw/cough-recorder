@@ -65,7 +65,7 @@ struct RecordingReviewView: View {
 
                 Button {
                     stopPlayback()
-                    navigationPath.append("GenderAgeForm")
+                    navigationPath.append("PatientInfoForm")
                 } label: {
                     Text("録音完了")
                         .frame(maxWidth: .infinity, minHeight: 60)

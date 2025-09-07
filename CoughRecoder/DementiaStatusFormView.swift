@@ -13,8 +13,14 @@ struct DementiaStatusFormView: View {
     @State private var showingAlert = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
+    @State private var shouldResetOnDismiss = false
+    @State private var isUploading = false
 
-    private let options: [String] = ["なし",  "診断されてはいないが、中・低度の認知症の症状が見られる", "診断された認知症あり"]
+    private let options: [String] = [
+        "なし",
+        "診断されてはいないが、中・低度の認知症の症状が見られる",
+        "診断された認知症あり"
+    ]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,10 +30,10 @@ struct DementiaStatusFormView: View {
 
             Form {
                 Picker("認知症の有無", selection: $session.dementiaStatus) {
-                                    ForEach(options, id: \.self) { option in
-                                        Text(option).tag(option)
-                                    }
-                                }
+                    ForEach(options, id: \.self) { option in
+                        Text(option).tag(option)
+                    }
+                }
                 .pickerStyle(.inline)
                 .padding(.vertical, 10)
                 .frame(height: 50)
@@ -38,7 +44,7 @@ struct DementiaStatusFormView: View {
 
             HStack {
                 Button {
-                    navigationPath.removeLast()
+                    if !navigationPath.isEmpty { navigationPath.removeLast() }
                 } label: {
                     Text("戻る")
                         .frame(maxWidth: .infinity)
@@ -59,14 +65,14 @@ struct DementiaStatusFormView: View {
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
-                .disabled(session.dementiaStatus.isEmpty) // 未選択でも保存OKにするなら削除
+                .disabled(session.dementiaStatus.isEmpty)
             }
             .padding()
         }
         .navigationBarBackButtonHidden(true)
         .alert(alertTitle, isPresented: $showingAlert) {
             Button("OK") {
-                if alertTitle == "保存しました" {
+                if shouldResetOnDismiss {
                     session.sessionReset()
                     navigationPath.removeAll()
                 }
@@ -76,23 +82,50 @@ struct DementiaStatusFormView: View {
         }
     }
 
+    @MainActor
     private func handleSave() {
+        // 録音必須チェック
         guard session.recordingURL != nil else {
             alertTitle = "未録音です"
             alertMessage = "録音データが見つかりません。録音を完了してから保存してください。"
+            shouldResetOnDismiss = false
             showingAlert = true
             return
         }
 
+        // ローカル保存
         do {
-            let dir = try AppFileStore.shared.saveSession(session)
-            alertTitle = "保存しました"
-            alertMessage = "アプリ内に保存しました：\n\(dir.path)\n（Filesアプリ > このiPhone内 > CoughRecoder > Sessions）"
-            showingAlert = true
+            _ = try AppFileStore.shared.saveSession(session)
         } catch {
             alertTitle = "保存に失敗しました"
             alertMessage = error.localizedDescription
+            shouldResetOnDismiss = false
             showingAlert = true
+            return
+        }
+
+        // ネット送信
+        isUploading = true
+        shouldResetOnDismiss = false
+
+        Task {
+            defer { Task { @MainActor in isUploading = false } }
+            do {
+                let msg = try await APIClient.upload(session: session)
+                await MainActor.run {
+                    alertTitle = "保存に成功しました！"
+                    alertMessage = msg
+                    shouldResetOnDismiss = true
+                    showingAlert = true
+                }
+            } catch {
+                await MainActor.run {
+                    alertTitle = "保存に失敗しました"
+                    alertMessage = error.localizedDescription
+                    shouldResetOnDismiss = false
+                    showingAlert = true
+                }
+            }
         }
     }
 }

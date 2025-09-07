@@ -12,6 +12,9 @@ struct RecordingView: View {
     @State private var errorMessage: String?
     @State private var showingErrorAlert = false
     @State private var finishing = false
+    
+    @State private var elapsedSeconds: Int = 0
+    @State private var elapsedTimer: Timer? = nil
 
     var body: some View {
         VStack {
@@ -23,15 +26,19 @@ struct RecordingView: View {
                     .padding(32)
                     .background(Color.red)
                     .cornerRadius(100)
+                
+                Spacer()
+                
+                // 経過秒数
+                Text(formattedElapsed(elapsedSeconds))
+                    .font(.system(size: 40))
 
                 Spacer()
-                Image(systemName: "mic.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 200, height: 200)
-                    .foregroundColor(.red)
-                    .scaleEffect(micPulse ? 1.1 : 1.0)
-                    .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: micPulse)
+                
+                WaveformView(levels: audioRecorder.levels)
+                    .frame(height: 180)
+                    .padding(.horizontal, 24)
+                    .animation(.easeOut(duration: 0.15), value: audioRecorder.levels)
                 Spacer()
 
                 HStack {
@@ -78,7 +85,7 @@ struct RecordingView: View {
             } else {
                 Spacer()
                 Text("カウントダウンが終了すると自動で録音が開始されます")
-                    .font(.system(size: 45))
+                    .font(.system(size: 35))
                 Spacer()
                 Text("\(countdown)")
                     .font(.system(size: 200))
@@ -91,6 +98,7 @@ struct RecordingView: View {
             }
         }
         .onAppear { startCountdown() }
+        .onDisappear { stopElapsedTimer() }
         .navigationBarBackButtonHidden(true)
         .alert("録音エラー", isPresented: $showingErrorAlert) {
             Button("OK") { navigationPath.removeLast() }
@@ -111,6 +119,7 @@ struct RecordingView: View {
                         case .success:
                             showRecordingUI = true
                             startMicAnimation()
+                            startElapsedTimer()
                         case .failure(let err):
                             errorMessage = err.localizedDescription
                             showingErrorAlert = true
@@ -125,6 +134,25 @@ struct RecordingView: View {
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             micPulse.toggle()
         }
+    }
+    
+    private func startElapsedTimer() {
+        stopElapsedTimer() // 念のため既存を停止
+        elapsedTimer = Timer
+            .scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+                elapsedSeconds += 1
+            }
+    }
+    
+    private func stopElapsedTimer() {
+        elapsedTimer?.invalidate()
+        elapsedTimer = nil
+    }
+    
+    private func formattedElapsed(_ seconds: Int) -> String {
+        let m = seconds / 60
+        let s = seconds % 60
+        return String(format: "%02d:%02d", m, s)
     }
 }
 

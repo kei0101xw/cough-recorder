@@ -41,8 +41,8 @@ struct GenderAgeFormView: View {
             
             Form {
                 Picker("性別を選択してください", selection: $session.gender) {
-                    Text("男性").tag("男性")
-                    Text("女性").tag("女性")
+                    Text("男性").tag("male")
+                    Text("女性").tag("female")
                     Text("その他").tag("その他")
                 }
                 .pickerStyle(.inline)
