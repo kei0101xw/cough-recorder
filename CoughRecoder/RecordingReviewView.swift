@@ -1,6 +1,12 @@
-
 import SwiftUI
 import AVFoundation
+
+final class ReviewAudioPlayerDelegateBox: NSObject, AVAudioPlayerDelegate {
+    var onFinish: (() -> Void)?
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        onFinish?()
+    }
+}
 
 struct RecordingReviewView: View {
     @Binding var navigationPath: [String]
@@ -10,12 +16,15 @@ struct RecordingReviewView: View {
     @State private var isPlaying = false
     @State private var errorMessage: String?
     @State private var showingErrorAlert = false
+    @State private var delegateBox = AudioPlayerDelegateBox() // ★ 強参照で保持
 
     var body: some View {
         VStack {
             Text("録音の確認")
-                .font(.system(size: 60))
-                .padding()
+                .font(.system(size: 30, weight: .regular))
+                .padding(.vertical, 12)
+            
+            Divider()
 
             Spacer()
 
@@ -30,15 +39,23 @@ struct RecordingReviewView: View {
             }
 
             Spacer()
-
-            Text("""
-                 ・咳以外の音が入っていないか
-                 ・咳が途中で切れていないか　などを確認してください。
-                 """)
-            .font(.system(size: 40))
+            
+            Text("以下の項目をご確認ください。")
+                .font(.system(size: 25))
+            
+            VStack(alignment: .leading) {
+                HStack {
+                    NumberCircle(number: 1)
+                    Text("咳以外の音が入っていないか")
+                        .font(.system(size: 25))
+                }
+                HStack {
+                    NumberCircle(number: 2)
+                    Text("咳が途中で切れていないか")
+                        .font(.system(size: 25))
+                }
+            }
             .padding()
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(10)
 
             Spacer()
 
@@ -99,9 +116,21 @@ struct RecordingReviewView: View {
             stopPlayback()
         } else {
             do {
-                player = try AVAudioPlayer(contentsOf: url)
-                player?.prepareToPlay()
-                player?.play()
+                let p = try AVAudioPlayer(contentsOf: url)
+                p.prepareToPlay()
+
+                // ★ 再生終了でUIを戻す
+                delegateBox.onFinish = {
+                    DispatchQueue.main.async {
+                        self.isPlaying = false
+                        self.player = nil
+                        // 必要なら頭出し: p?.currentTime = 0
+                    }
+                }
+                p.delegate = delegateBox
+
+                p.play()
+                player = p
                 isPlaying = true
             } catch {
                 errorMessage = error.localizedDescription
@@ -112,6 +141,7 @@ struct RecordingReviewView: View {
 
     private func stopPlayback() {
         player?.stop()
+        player = nil          // ★ 明示的に破棄
         isPlaying = false
     }
 }

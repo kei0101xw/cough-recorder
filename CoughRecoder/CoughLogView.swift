@@ -6,86 +6,75 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 struct CoughLogView: View {
     @Binding var navigationPath: [String]
-    
-    struct CoughLog: Identifiable {
-        let id = UUID()
-        let date: String
-        let name: String
-        let hospital: String
-        let language: String
-        let disease: String
-        let file: String
-        let upload: String
-    }
-    
-    let logs: [CoughLog] = [
-        CoughLog(date: "2025/08/07 10:00", name: "田中太郎", hospital: "九大病院", language: "日本語", disease: "喘息", file: "cough1.wav", upload: "済"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-        CoughLog(date: "2025/08/07 11:20", name: "山田花子", hospital: "九大病院", language: "英語", disease: "コロナ", file: "cough2.wav", upload: "未"),
-    ]
-    
+    @StateObject private var store = SessionStore()
+
+    private let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "ja_JP")
+        f.dateFormat = "yyyy/MM/dd HH:mm"
+        return f
+    }()
+
     var body: some View {
         VStack {
             Text("咳記録ログ画面")
-                .font(.system(size: 40))
-                .padding(.top)
+                .font(.system(size: 30, weight: .regular))
+                .padding(.vertical, 12)
             
-            ScrollView([.horizontal, .vertical]) {
-                Grid(alignment: .leading, horizontalSpacing: 60, verticalSpacing: 15) {
-                    
-                    // 見出し行
-                    GridRow {
-                        Text("日時").bold()
-                        Text("名前").bold()
-                        Text("病院").bold()
-                        Text("言語").bold()
-                        Text("病気").bold()
-                        Text("ファイル").bold()
-                        Text("アップ").bold()
-                    }
-                    .font(.system(size: 25))
-                    .padding(.bottom, 5)
-                    
-                    Divider()
-                        .gridCellUnsizedAxes(.horizontal)
-                    
-                    // データ行
-                    ForEach(logs) { log in
+            Divider()
+
+            if store.records.isEmpty {
+                Spacer()
+                Text("保存済みの記録はまだありません。")
+                    .font(.system(size: 24))
+                    .foregroundColor(.secondary)
+                Spacer()
+            } else {
+                ScrollView([.vertical]) {
+                    Grid(alignment: .leading, horizontalSpacing: 60, verticalSpacing: 15) {
+
+                        // 見出し行（保存日時 / ID / 施設 / 性別 / 年齢 / 音声）
                         GridRow {
-                            Text(log.date)
-                            Text(log.name)
-                            Text(log.hospital)
-                            Text(log.language)
-                            Text(log.disease)
-                            Text(log.file)
-                            Text(log.upload)
+                            Text("保存日時").bold()
+                            Text("ID").bold()
+                            Text("施設").bold()
+                            Text("性別").bold()
+                            Text("年齢").bold()
+                            Text("音声").bold()
                         }
-                        
-                        Divider()
-                            .gridCellUnsizedAxes(.horizontal)
+                        .font(.system(size: 20))
+                        .padding(.bottom, 5)
+
+                        Divider().gridCellUnsizedAxes(.horizontal)
+
+                        // データ行
+                        ForEach(store.records) { r in
+                            GridRow {
+                                Text(dateFormatter.string(from: r.payload.savedAt))
+                                Text(r.payload.id.isEmpty ? "—" : r.payload.id)
+                                Text(r.payload.facility.isEmpty ? "—" : r.payload.facility)
+                                Text(r.payload.gender.isEmpty ? "—" : r.payload.gender)
+                                Text(r.payload.age.map(String.init) ?? "—")
+
+                                // 再生ボタン
+                                LogAudioPreviewButton(url: r.audioURL)
+                            }
+
+                            Divider().gridCellUnsizedAxes(.horizontal)
+                        }
                     }
-                    .font(.system(size: 25))
+                    .font(.system(size: 20))
+                    .padding()
                 }
-                .padding()
             }
-            
+
             Spacer()
+
+            Divider()
             
             Button(action: {
                 navigationPath.removeAll()
@@ -93,14 +82,98 @@ struct CoughLogView: View {
                 Text("ホームへ戻る")
                     .frame(width: UIScreen.main.bounds.width / 2)
                     .frame(height: 60)
-                    .font(.system(size: 40))
-                    .padding()
+                    .font(.system(size: 32))
+                    .padding(.horizontal)
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
             }
             .padding()
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear { store.reload() }
+    }
+}
+
+// 再生終了コールバック用のデリゲート（強参照で保持）
+final class LogPlayerDelegateBox: NSObject, AVAudioPlayerDelegate {
+    var onFinish: (() -> Void)?
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        onFinish?()
+    }
+}
+
+// 再生開始前に AudioSession を明示設定（サイレントスイッチ無視）
+private func prepareAudioSessionForPlayback() throws {
+    let s = AVAudioSession.sharedInstance()
+    try s.setCategory(.playback, options: [.duckOthers])
+    try s.setActive(true)
+}
+
+struct LogAudioPreviewButton: View {
+    let url: URL
+
+    @State private var player: AVAudioPlayer?
+    @State private var isPlaying = false
+    @State private var delegateBox = LogPlayerDelegateBox()
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button {
+                toggle()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 26)
+                    Text(isPlaying ? "停止" : "再生")
+                        .font(.system(size: 18, weight: .semibold))
+                }
+            }
+            .buttonStyle(.plain)
+        }
+        .onDisappear { stop() }
+    }
+
+    private func toggle() {
+        if isPlaying {
+            pause()
+            return
+        }
+        do {
+            try prepareAudioSessionForPlayback()       // ← ココがポイント（毎回安全に呼ぶ）
+            if let p = player {
+                p.play()
+                isPlaying = true
+                return
+            }
+            let p = try AVAudioPlayer(contentsOf: url)
+            p.prepareToPlay()
+            delegateBox.onFinish = {
+                DispatchQueue.main.async {
+                    self.isPlaying = false
+                    // self.player = nil // 再生し終わっても保持したい場合はコメントアウトのまま
+                }
+            }
+            p.delegate = delegateBox                    // delegate を強参照で保持
+            p.play()
+            player = p                                   // プレイヤーも強参照で保持
+            isPlaying = true
+        } catch {
+            print("play error:", error)
+        }
+    }
+
+    private func pause() {
+        player?.pause()
+        isPlaying = false
+    }
+
+    private func stop() {
+        player?.stop()
+        player = nil
+        isPlaying = false
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 }
 

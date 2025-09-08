@@ -15,6 +15,7 @@ struct CoughRecoderApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(session)
+                .preferredColorScheme(.light)
         }
     }
 }

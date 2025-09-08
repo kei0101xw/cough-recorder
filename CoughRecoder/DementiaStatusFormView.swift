@@ -115,6 +115,7 @@ struct DementiaStatusFormView: View {
                 await MainActor.run {
                     alertTitle = "保存に成功しました！"
                     alertMessage = msg
+                    session.startCooldown(seconds: 20) 
                     shouldResetOnDismiss = true
                     showingAlert = true
                 }

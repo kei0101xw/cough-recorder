@@ -10,129 +10,133 @@ import SwiftUI
 struct ContentView: View {
     @State var navigationPath: [String] = []
     @EnvironmentObject var session: RecordingSession
-    
+    @Environment(\.scenePhase) private var scenePhase
+
+    // 残り秒計算（TimelineView の date を使う）
+    private func remainingSeconds(at date: Date) -> Int {
+        guard let until = session.cooldownUntil else { return 0 }
+        return max(0, Int(ceil(until.timeIntervalSince(date))))
+    }
+    private func isInCooldown(at date: Date) -> Bool {
+        remainingSeconds(at: date) > 0
+    }
+
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            VStack {
-                ZStack {
-                    Image(.header)
-                        .ignoresSafeArea()
+            ZStack {
+                Color.blue.ignoresSafeArea()
+
+                VStack {
+                    Spacer()
                     HStack {
-                        Image(.virufyLogo)
-                        Image(.virufyText)
+                        Image(.appTitle)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 130)
+                        Text("Cough Recorder")
+                            .font(.system(size: 60)).bold()
+                            .foregroundColor(.white)
                     }
+                    Spacer()
+                    Rectangle()
+                        .fill(Color.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 450)
+                        .clipShape(.rect(topLeadingRadius: 50,
+                                         bottomLeadingRadius: 0,
+                                         bottomTrailingRadius: 0,
+                                         topTrailingRadius: 50))
                 }
-                
-                
-                Spacer()
-                
-                HStack {
-                    Button {
-                        navigationPath.append("PreRecording")
-                        session.sessionReset()
-                    } label: {
-                        VStack {
-                            Spacer()
-                            Text("録音する")
-                                .font(.system(size: 50))
-                                .bold()
-                            Spacer()
-                            Image(systemName: "mic.fill")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(height: 100)
-                            Spacer()
-                        }
-                        .frame(width: 500, height: 400)
-                        .padding()
-                        .background(Color.startButton.opacity(0.1))
-                        .foregroundColor(.startButton)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.startButton, lineWidth: 10)
-                        )
-                        .cornerRadius(10)
-                    }
-                    .padding()
-                    
+                .edgesIgnoringSafeArea(.all)
+
+                // ← ここを TimelineView で包む
+                TimelineView(.periodic(from: .now, by: 1)) { context in
+                    let remain = remainingSeconds(at: context.date)
+                    let cooling = remain > 0
+
                     VStack {
-                        Button {
-                            navigationPath.append("CoughLog")
-                        } label: {
-                            VStack {
-                                Text("咳記録ログ")
-                                    .font(.system(size: 50))
-                                    .bold()
-                                Image(systemName: "list.bullet.rectangle.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(height: 60)
+                        Spacer()
+                        Text("")
+                        VStack(spacing: 30) {
+                            Button {
+                                navigationPath.append("PreRecording")
+                                session.sessionReset()
+                            } label: {
+                                HStack(spacing: 20) {
+                                    Spacer()
+                                    Text("録音する")
+                                        .font(.system(size: 30)).bold()
+                                    Image(systemName: "mic.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height: 40)
+                                    Spacer()
+                                }
                             }
-                            .frame(width: 500, height: 180)
-                            .padding()
-                            .background(Color.logButton.opacity(0.1))
-                            .foregroundColor(.logButton)
+                            .frame(width: UIScreen.main.bounds.width / 2)
+                            .frame(height: 80)
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(20)
+                            .disabled(cooling)
+                            .opacity(cooling ? 0.5 : 1.0)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.logButton, lineWidth: 10)
+                                Group {
+                                    if cooling {
+                                        Text("あと \(remain) 秒")
+                                            .font(.system(size: 16, weight: .bold))
+                                            .padding(30)
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                                .padding(.trailing, 12),
+                                alignment: .trailing
                             )
-                            .cornerRadius(10)
-                        }
-                        
-                        Button {
-                            navigationPath.append("Settings")
-                        } label: {
+
                             VStack {
-                                Text("設定")
-                                    .font(.system(size: 50))
-                                    .bold()
-                                Image(systemName: "gearshape.fill")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(height: 60)
+                                Button {
+                                    navigationPath.append("CoughLog")
+                                } label: {
+                                    HStack(spacing: 20)  {
+                                        Text("咳記録ログ")
+                                            .font(.system(size: 30)).bold()
+                                        Image(systemName: "list.bullet.rectangle.fill")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(height: 30)
+                                    }
+                                    .frame(width: UIScreen.main.bounds.width / 2)
+                                    .frame(height: 80)
+                                    .foregroundColor(Color.primary.opacity(0.7))
+                                    .background(Color(.systemGray5))
+                                    .cornerRadius(20)
+                                }
                             }
-                            .frame(width: 500, height: 180)
-                            .padding()
-                            .background(Color.settingButton.opacity(0.1))
-                            .foregroundColor(.blue)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.blue, lineWidth: 10)
-                            )
-                            .cornerRadius(10)
                         }
+                        .padding(.bottom, 120)
                     }
                 }
-                Spacer()
             }
             .navigationDestination(for: String.self) { value in
                 switch value {
-                case "CoughLog":
-                    CoughLogView(navigationPath: $navigationPath)
-                case "Settings":
-                    SettingsView(navigationPath: $navigationPath)
-                case "PreRecording":
-                    PreRecordingView(navigationPath: $navigationPath)
-                case "Recording":
-                    RecordingView(navigationPath: $navigationPath)
-                case "RecordingReview":
-                    RecordingReviewView(navigationPath: $navigationPath)
-                case "PatientInfoForm":
-                    PatientInfoFormView(navigationPath: $navigationPath)
-                case "GenderAgeForm":
-                    GenderAgeFormView(navigationPath:
-                        $navigationPath)
-                case "CurrentSymptomsForm":
-                    CurrentSymptomsFormView(navigationPath:
-                        $navigationPath)
-                case "MedicalConditionForm":
-                    MedicalConditionFormView(navigationPath:
-                        $navigationPath)
-                case "DementiaStatusForm":
-                    DementiaStatusFormView(navigationPath:
-                        $navigationPath)
-                default:
-                    EmptyView()
+                case "CoughLog": CoughLogView(navigationPath: $navigationPath)
+                case "Settings": SettingsView(navigationPath: $navigationPath)
+                case "PreRecording": PreRecordingView(navigationPath: $navigationPath)
+                case "Recording": RecordingView(navigationPath: $navigationPath)
+                case "RecordingReview": RecordingReviewView(navigationPath: $navigationPath)
+                case "PatientInfoForm": PatientInfoFormView(navigationPath: $navigationPath)
+                case "GenderAgeForm": GenderAgeFormView(navigationPath: $navigationPath)
+                case "CurrentSymptomsForm": CurrentSymptomsFormView(navigationPath: $navigationPath)
+                case "MedicalConditionForm": MedicalConditionFormView(navigationPath: $navigationPath)
+                case "DementiaStatusForm": DementiaStatusFormView(navigationPath: $navigationPath)
+                default: EmptyView()
+                }
+            }
+            // 任意：フォアグラウンド復帰で即時再評価したい時の軽い起爆剤
+            .onChange(of: scenePhase) { oldValue, newValue in
+                if newValue == .active {
+                    // TimelineViewが更新を始めるので特に不要だが、
+                    // 必要ならここで軽い処理を入れてもOK
                 }
             }
         }
