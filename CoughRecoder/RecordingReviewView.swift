@@ -35,7 +35,7 @@ struct RecordingReviewView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 300, height: 300)
-                    .foregroundColor(.startButton)
+                    .foregroundColor(.red)
             }
 
             Spacer()

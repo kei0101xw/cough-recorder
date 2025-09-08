@@ -120,7 +120,6 @@ struct ContentView: View {
             .navigationDestination(for: String.self) { value in
                 switch value {
                 case "CoughLog": CoughLogView(navigationPath: $navigationPath)
-                case "Settings": SettingsView(navigationPath: $navigationPath)
                 case "PreRecording": PreRecordingView(navigationPath: $navigationPath)
                 case "Recording": RecordingView(navigationPath: $navigationPath)
                 case "RecordingReview": RecordingReviewView(navigationPath: $navigationPath)
