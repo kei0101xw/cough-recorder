@@ -1,13 +1,6 @@
 import SwiftUI
 import AVFoundation
 
-final class ReviewAudioPlayerDelegateBox: NSObject, AVAudioPlayerDelegate {
-    var onFinish: (() -> Void)?
-    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        onFinish?()
-    }
-}
-
 struct RecordingReviewView: View {
     @Binding var navigationPath: [String]
     @EnvironmentObject var session: RecordingSession

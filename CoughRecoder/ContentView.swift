@@ -5,14 +5,25 @@
 //  Created by 原田佳祐 on 2025/08/05.
 //
 
+//
+//  ContentView.swift
+//  CoughRecoder
+//
+//  Created by 原田佳祐 on 2025/08/05.
+//
+
+import SwiftUI
+
 import SwiftUI
 
 struct ContentView: View {
     @State var navigationPath: [String] = []
     @EnvironmentObject var session: RecordingSession
+    @EnvironmentObject var importer: ImportCoordinator
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage("cr_hasConsented") private var hasConsented = false
+    @State private var showConsent = false
 
-    // 残り秒計算（TimelineView の date を使う）
     private func remainingSeconds(at date: Date) -> Int {
         guard let until = session.cooldownUntil else { return 0 }
         return max(0, Int(ceil(until.timeIntervalSince(date))))
@@ -42,14 +53,15 @@ struct ContentView: View {
                         .fill(Color.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 450)
-                        .clipShape(.rect(topLeadingRadius: 50,
-                                         bottomLeadingRadius: 0,
-                                         bottomTrailingRadius: 0,
-                                         topTrailingRadius: 50))
+                        .clipShape(.rect(
+                            topLeadingRadius: 50,
+                            bottomLeadingRadius: 0,
+                            bottomTrailingRadius: 0,
+                            topTrailingRadius: 50
+                        ))
                 }
                 .edgesIgnoringSafeArea(.all)
 
-                // ← ここを TimelineView で包む
                 TimelineView(.periodic(from: .now, by: 1)) { context in
                     let remain = remainingSeconds(at: context.date)
                     let cooling = remain > 0
@@ -131,12 +143,27 @@ struct ContentView: View {
                 default: EmptyView()
                 }
             }
-            // 任意：フォアグラウンド復帰で即時再評価したい時の軽い起爆剤
+            .fullScreenCover(isPresented: $showConsent) {
+                ConsentSheet {
+                    hasConsented = true
+                    showConsent = false
+                }
+                .interactiveDismissDisabled(true)
+            }
+            .onAppear {
+                if !hasConsented { showConsent = true }
+            }
             .onChange(of: scenePhase) { oldValue, newValue in
                 if newValue == .active {
-                    // TimelineViewが更新を始めるので特に不要だが、
-                    // 必要ならここで軽い処理を入れてもOK
                 }
+            }
+            .onOpenURL { url in
+                ImportCoordinator.shared.handleIncomingFile(url: url)
+            }
+            .onReceive(importer.$lastImportedURL) { imported in
+                guard let imported else { return }
+                session.recordingURL = imported
+                navigationPath = ["PatientInfoForm"]
             }
         }
     }
