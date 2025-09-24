@@ -8,7 +8,6 @@ struct RecordingView: View {
 
     @State private var countdown: Int = 3
     @State private var showRecordingUI = false
-    @State private var micPulse = false
     @State private var errorMessage: String?
     @State private var showingErrorAlert = false
     @State private var finishing = false
@@ -28,8 +27,7 @@ struct RecordingView: View {
                     .cornerRadius(100)
                 
                 Spacer()
-                
-                // 経過秒数
+
                 Text(formattedElapsed(elapsedSeconds))
                     .font(.system(size: 40))
 
@@ -40,6 +38,7 @@ struct RecordingView: View {
                     .padding(.horizontal, 24)
                     .animation(.easeOut(duration: 0.15), value: audioRecorder.levels)
                 Spacer()
+                Divider()
 
                 HStack {
                     Button {
@@ -118,7 +117,6 @@ struct RecordingView: View {
                         switch result {
                         case .success:
                             showRecordingUI = true
-                            startMicAnimation()
                             startElapsedTimer()
                         case .failure(let err):
                             errorMessage = err.localizedDescription
@@ -129,15 +127,9 @@ struct RecordingView: View {
             }
         }
     }
-
-    private func startMicAnimation() {
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            micPulse.toggle()
-        }
-    }
     
     private func startElapsedTimer() {
-        stopElapsedTimer() // 念のため既存を停止
+        stopElapsedTimer()
         elapsedTimer = Timer
             .scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                 elapsedSeconds += 1

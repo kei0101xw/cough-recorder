@@ -1,10 +1,3 @@
-//
-//  ConsentSheet.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/09/09.
-//
-
 import SwiftUI
 
 struct ConsentSheet: View {

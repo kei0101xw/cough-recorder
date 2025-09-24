@@ -1,10 +1,3 @@
-//
-//  CurrentSymptomsFormView.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/08/24.
-//
-
 import SwiftUI
 
 struct CurrentSymptomsFormView: View {

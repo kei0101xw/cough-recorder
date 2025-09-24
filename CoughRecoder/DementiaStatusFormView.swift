@@ -1,9 +1,3 @@
-//  DementiaStatusFormView.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/09/03.
-//
-
 import SwiftUI
 
 struct DementiaStatusFormView: View {
@@ -73,8 +67,7 @@ struct DementiaStatusFormView: View {
         .alert(alertTitle, isPresented: $showingAlert) {
             Button("OK") {
                 if shouldResetOnDismiss {
-                    session.sessionReset()
-                    navigationPath.removeAll()
+                    navigationPath.append("ThankYou")
                 }
             }
         } message: {
@@ -84,7 +77,6 @@ struct DementiaStatusFormView: View {
 
     @MainActor
     private func handleSave() {
-        // 録音必須チェック
         guard session.recordingURL != nil else {
             alertTitle = "未録音です"
             alertMessage = "録音データが見つかりません。録音を完了してから保存してください。"
@@ -93,7 +85,6 @@ struct DementiaStatusFormView: View {
             return
         }
 
-        // ローカル保存
         do {
             _ = try AppFileStore.shared.saveSession(session)
         } catch {
@@ -104,7 +95,6 @@ struct DementiaStatusFormView: View {
             return
         }
 
-        // ネット送信
         isUploading = true
         shouldResetOnDismiss = false
 
@@ -113,7 +103,7 @@ struct DementiaStatusFormView: View {
             do {
                 let msg = try await APIClient.upload(session: session)
                 await MainActor.run {
-                    alertTitle = "保存に成功しました！"
+                    alertTitle = "保存・送信に成功しました！"
                     alertMessage = msg
                     session.startCooldown(seconds: 20) 
                     shouldResetOnDismiss = true

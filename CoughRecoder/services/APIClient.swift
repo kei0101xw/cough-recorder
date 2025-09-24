@@ -1,10 +1,3 @@
-//
-//  APIClient.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/09/06.
-//
-
 import Foundation
 
 struct StructuredData: Codable {

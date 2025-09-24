@@ -1,10 +1,3 @@
-//
-//  AppSettings.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/08/25.
-//
-
 import Foundation
 import Combine
 

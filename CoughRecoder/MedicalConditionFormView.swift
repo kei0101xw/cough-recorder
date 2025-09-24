@@ -1,5 +1,3 @@
-//  MedicalConditionFormView.swift
-
 import SwiftUI
 
 struct MedicalConditionFormView: View {
@@ -68,7 +66,7 @@ struct MedicalConditionFormView: View {
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
-                .disabled(session.conditions.isEmpty) // 任意: 必須でなければ削除OK
+                .disabled(session.conditions.isEmpty)
             }
             .padding()
         }

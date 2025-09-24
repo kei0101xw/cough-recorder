@@ -9,7 +9,7 @@ struct RecordingReviewView: View {
     @State private var isPlaying = false
     @State private var errorMessage: String?
     @State private var showingErrorAlert = false
-    @State private var delegateBox = AudioPlayerDelegateBox() // ★ 強参照で保持
+    @State private var delegateBox = AudioPlayerDelegateBox()
 
     var body: some View {
         VStack {
@@ -51,6 +51,7 @@ struct RecordingReviewView: View {
             .padding()
 
             Spacer()
+            Divider()
 
             HStack {
                 Button {
@@ -112,12 +113,10 @@ struct RecordingReviewView: View {
                 let p = try AVAudioPlayer(contentsOf: url)
                 p.prepareToPlay()
 
-                // ★ 再生終了でUIを戻す
                 delegateBox.onFinish = {
                     DispatchQueue.main.async {
                         self.isPlaying = false
                         self.player = nil
-                        // 必要なら頭出し: p?.currentTime = 0
                     }
                 }
                 p.delegate = delegateBox
@@ -134,7 +133,7 @@ struct RecordingReviewView: View {
 
     private func stopPlayback() {
         player?.stop()
-        player = nil          // ★ 明示的に破棄
+        player = nil
         isPlaying = false
     }
 }

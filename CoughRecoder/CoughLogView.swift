@@ -1,10 +1,3 @@
-//
-//  CoughLogView.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/08/05.
-//
-
 import SwiftUI
 import AVFoundation
 
@@ -37,7 +30,6 @@ struct CoughLogView: View {
                 ScrollView([.vertical]) {
                     Grid(alignment: .leading, horizontalSpacing: 60, verticalSpacing: 15) {
 
-                        // 見出し行（保存日時 / ID / 施設 / 性別 / 年齢 / 音声）
                         GridRow {
                             Text("保存日時").bold()
                             Text("ID").bold()
@@ -51,7 +43,6 @@ struct CoughLogView: View {
 
                         Divider().gridCellUnsizedAxes(.horizontal)
 
-                        // データ行
                         ForEach(store.records) { r in
                             GridRow {
                                 Text(dateFormatter.string(from: r.payload.savedAt))
@@ -60,7 +51,6 @@ struct CoughLogView: View {
                                 Text(r.payload.gender.isEmpty ? "—" : r.payload.gender)
                                 Text(r.payload.age.map(String.init) ?? "—")
 
-                                // 再生ボタン
                                 LogAudioPreviewButton(url: r.audioURL)
                             }
 
@@ -94,7 +84,6 @@ struct CoughLogView: View {
     }
 }
 
-// 再生終了コールバック用のデリゲート（強参照で保持）
 final class LogPlayerDelegateBox: NSObject, AVAudioPlayerDelegate {
     var onFinish: (() -> Void)?
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
@@ -102,7 +91,6 @@ final class LogPlayerDelegateBox: NSObject, AVAudioPlayerDelegate {
     }
 }
 
-// 再生開始前に AudioSession を明示設定（サイレントスイッチ無視）
 private func prepareAudioSessionForPlayback() throws {
     let s = AVAudioSession.sharedInstance()
     try s.setCategory(.playback, options: [.duckOthers])
@@ -141,7 +129,7 @@ struct LogAudioPreviewButton: View {
             return
         }
         do {
-            try prepareAudioSessionForPlayback()       // ← ココがポイント（毎回安全に呼ぶ）
+            try prepareAudioSessionForPlayback()
             if let p = player {
                 p.play()
                 isPlaying = true
@@ -152,12 +140,11 @@ struct LogAudioPreviewButton: View {
             delegateBox.onFinish = {
                 DispatchQueue.main.async {
                     self.isPlaying = false
-                    // self.player = nil // 再生し終わっても保持したい場合はコメントアウトのまま
                 }
             }
-            p.delegate = delegateBox                    // delegate を強参照で保持
+            p.delegate = delegateBox
             p.play()
-            player = p                                   // プレイヤーも強参照で保持
+            player = p
             isPlaying = true
         } catch {
             print("play error:", error)

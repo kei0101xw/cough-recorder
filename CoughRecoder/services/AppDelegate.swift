@@ -1,10 +1,3 @@
-//
-//  AppDelegate.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/09/09.
-//
-
 import UIKit
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
@@ -16,4 +9,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         }
         return true
     }
+    
+    
 }

@@ -1,19 +1,3 @@
-//
-//  ContentView.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/08/05.
-//
-
-//
-//  ContentView.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/08/05.
-//
-
-import SwiftUI
-
 import SwiftUI
 
 struct ContentView: View {
@@ -68,7 +52,6 @@ struct ContentView: View {
 
                     VStack {
                         Spacer()
-                        Text("")
                         VStack(spacing: 30) {
                             Button {
                                 navigationPath.append("PreRecording")
@@ -140,6 +123,7 @@ struct ContentView: View {
                 case "CurrentSymptomsForm": CurrentSymptomsFormView(navigationPath: $navigationPath)
                 case "MedicalConditionForm": MedicalConditionFormView(navigationPath: $navigationPath)
                 case "DementiaStatusForm": DementiaStatusFormView(navigationPath: $navigationPath)
+                case "ThankYou": ThankYouView(navigationPath: $navigationPath)
                 default: EmptyView()
                 }
             }
@@ -172,4 +156,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environmentObject(RecordingSession())
+        .environmentObject(ImportCoordinator.shared)
 }

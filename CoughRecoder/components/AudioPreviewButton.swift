@@ -1,10 +1,3 @@
-//
-//  AudioPreviewButton.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/09/08.
-//
-
 import SwiftUI
 import AVFoundation
 import Combine

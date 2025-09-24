@@ -1,10 +1,3 @@
-//
-//  GenderAgeForm.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/08/23.
-//
-
 import SwiftUI
 
 struct GenderAgeFormView: View {
@@ -16,21 +9,6 @@ struct GenderAgeFormView: View {
             Binding(
                 get: { session.age ?? 0 },
                 set: { session.age = $0 }
-            )
-        }
-
-
-        private var ageTextBinding: Binding<String> {
-            Binding(
-                get: { session.age.map(String.init) ?? "" },
-                set: { input in
-
-                    if input.isEmpty {
-                        session.age = nil
-                    } else if let v = Int(input), (0...120).contains(v) {
-                        session.age = v
-                    }
-                }
             )
         }
     
@@ -70,7 +48,7 @@ struct GenderAgeFormView: View {
             
             HStack {
                 Button(action: {
-                    navigationPath.removeLast() // 前の画面に戻る
+                    navigationPath.removeLast()
                 }) {
                     Text("戻る")
                         .frame(maxWidth: .infinity)

@@ -1,10 +1,3 @@
-//
-//  AppFileStore.swift
-//  CoughRecoder
-//
-//  Created by 原田佳祐 on 2025/08/26.
-//
-
 import Foundation
 
 struct SessionPayload: Codable {
@@ -25,16 +18,13 @@ final class AppFileStore {
 
     @discardableResult
     func saveSession(_ session: RecordingSession) throws -> URL {
-        // 保存ディレクトリ: Documents/Sessions
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let sessionDir = docs.appendingPathComponent("Sessions", conformingTo: .directory)
         try FileManager.default.createDirectory(at: sessionDir, withIntermediateDirectories: true)
 
-        // 日時
         let ts = Int(Date().timeIntervalSince1970)
         let base = "session_\(ts)"
 
-        // 音声ファイルをコピー
         guard let srcURL = session.recordingURL else {
             throw NSError(domain: "AppFileStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "録音ファイルが見つかりません"])
         }
