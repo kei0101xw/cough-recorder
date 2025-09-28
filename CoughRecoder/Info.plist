@@ -17,7 +17,15 @@
             </array>
         </dict>
     </array>
+
     <key>LSSupportsOpeningDocumentsInPlace</key>
-        <true/>
+    <true/>
+
+    <!-- Supabase 用の設定を追加 -->
+    <key>SUPABASE_URL</key>
+    <string>https://ovruhfrnklaidzszqolf.supabase.co</string>
+
+    <key>SUPABASE_ANON_KEY</key>
+    <string>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92cnVoZnJua2xhaWR6c3pxb2xmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwNjIyMjksImV4cCI6MjA3NDYzODIyOX0.xuKFtrgodbZsvPxS1kBhJtRfX8U4ZCt_NkawUo45NeM</string>
 </dict>
 </plist>
