@@ -10,13 +10,14 @@ struct RecordingReviewView: View {
     @State private var errorMessage: String?
     @State private var showingErrorAlert = false
     @State private var delegateBox = AudioPlayerDelegateBox()
+    @State private var showRedoAlert = false
 
     var body: some View {
         VStack {
             Text("録音の確認")
                 .font(.system(size: 30, weight: .regular))
                 .padding(.vertical, 12)
-            
+
             Divider()
 
             Spacer()
@@ -32,10 +33,10 @@ struct RecordingReviewView: View {
             }
 
             Spacer()
-            
+
             Text("以下の項目をご確認ください。")
                 .font(.system(size: 25))
-            
+
             VStack(alignment: .leading) {
                 HStack {
                     NumberCircle(number: 1)
@@ -52,19 +53,9 @@ struct RecordingReviewView: View {
 
             Spacer()
             Divider()
-
             HStack {
                 Button {
-                    stopPlayback()
-                    if let url = session.recordingURL {
-                        try? FileManager.default.removeItem(at: url)
-                    }
-                    session.recordingURL = nil
-                    if navigationPath.count >= 2 {
-                        navigationPath.removeLast(2)
-                    } else {
-                        navigationPath.removeAll()
-                    }
+                    showRedoAlert = true
                 } label: {
                     Text("やり直す")
                         .frame(maxWidth: .infinity, minHeight: 60)
@@ -88,6 +79,14 @@ struct RecordingReviewView: View {
                 }
             }
             .padding()
+            .alert("録音をやり直しますか？", isPresented: $showRedoAlert) {
+                Button("閉じる", role: .cancel) { }
+                Button("やり直す", role: .destructive) {
+                    performRedo()
+                }
+            } message: {
+                Text("現在の録音は削除されます。元に戻すことはできません。")
+            }
         }
         .navigationBarBackButtonHidden(true)
         .alert("再生エラー", isPresented: $showingErrorAlert) {
@@ -135,6 +134,19 @@ struct RecordingReviewView: View {
         player?.stop()
         player = nil
         isPlaying = false
+    }
+
+    private func performRedo() {
+        stopPlayback()
+        if let url = session.recordingURL {
+            try? FileManager.default.removeItem(at: url)
+        }
+        session.recordingURL = nil
+        if navigationPath.count >= 2 {
+            navigationPath.removeLast(2)
+        } else {
+            navigationPath.removeAll()
+        }
     }
 }
 
