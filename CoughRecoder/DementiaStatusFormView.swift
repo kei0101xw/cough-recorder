@@ -48,18 +48,30 @@ struct DementiaStatusFormView: View {
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(10)
                 }
+                .disabled(isUploading) // 送信中は戻るも無効化（任意）
 
                 Button(action: handleSave) {
-                    Text("送信して保存する")
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 60)
-                        .font(.system(size: 32, weight: .semibold))
-                        .padding(.horizontal)
-                        .background(session.dementiaStatus.isEmpty ? Color.blue.opacity(0.4) : Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                    Group {
+                        if isUploading {
+                            HStack(spacing: 8) {
+                                ProgressView()
+                                Text("送信中…")
+                            }
+                        } else {
+                            Text("送信して保存する")
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 60)
+                    .font(.system(size: 32, weight: .semibold))
+                    .padding(.horizontal)
+                    .background((session.dementiaStatus.isEmpty || isUploading) ? Color.blue.opacity(0.4) : Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
                 }
-                .disabled(session.dementiaStatus.isEmpty)
+                // 送信中は無効化 + タップを物理的に通さない
+                .disabled(session.dementiaStatus.isEmpty || isUploading)
+                .allowsHitTesting(!isUploading)
             }
             .padding()
         }
@@ -77,6 +89,8 @@ struct DementiaStatusFormView: View {
 
     @MainActor
     private func handleSave() {
+        if isUploading { return }
+
         guard session.recordingURL != nil else {
             alertTitle = "未録音です"
             alertMessage = "録音データが見つかりません。録音を完了してから保存してください。"
@@ -99,13 +113,17 @@ struct DementiaStatusFormView: View {
         shouldResetOnDismiss = false
 
         Task {
-            defer { Task { @MainActor in isUploading = false } }
+            defer {
+                Task { @MainActor in
+                    isUploading = false
+                }
+            }
             do {
                 let msg = try await APIClient.upload(session: session)
                 await MainActor.run {
                     alertTitle = "保存・送信に成功しました！"
                     alertMessage = msg
-                    session.startCooldown(seconds: 20) 
+                    session.startCooldown(seconds: 20)
                     shouldResetOnDismiss = true
                     showingAlert = true
                 }
