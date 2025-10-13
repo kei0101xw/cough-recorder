@@ -11,9 +11,14 @@ struct RecordingView: View {
     @State private var errorMessage: String?
     @State private var showingErrorAlert = false
     @State private var finishing = false
-    
     @State private var elapsedSeconds: Int = 0
     @State private var elapsedTimer: Timer? = nil
+
+    // 録音開始から完了できるまでの最低秒数
+    private let minSecondsBeforeFinish = 5
+    
+    private var canFinish: Bool { elapsedSeconds >= minSecondsBeforeFinish && !finishing }
+    private var remainingToFinish: Int { max(0, minSecondsBeforeFinish - elapsedSeconds) }
 
     var body: some View {
         VStack {
@@ -55,7 +60,7 @@ struct RecordingView: View {
                     }
 
                     Button {
-                        guard !finishing else { return }
+                        guard canFinish else { return }
                         finishing = true
                         audioRecorder.stopRecording { url in
                             DispatchQueue.main.async {
@@ -70,14 +75,20 @@ struct RecordingView: View {
                             }
                         }
                     } label: {
-                        Text(finishing ? "処理中…" : "録音完了")
-                            .frame(maxWidth: .infinity, minHeight: 60)
-                            .font(.system(size: 32))
-                            .padding(.horizontal)
-                            .background(finishing ? Color.gray : Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
+                        Text(
+                            finishing
+                            ? "処理中…"
+//                            : (canFinish ? "録音完了" : "録音完了（あと\(remainingToFinish)秒）")
+                            : "録音完了"
+                        )
+                        .frame(maxWidth: .infinity, minHeight: 60)
+                        .font(.system(size: 32))
+                        .padding(.horizontal)
+                        .background(canFinish ? Color.blue : Color.gray)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                     }
+                    .disabled(!canFinish)
                 }
                 .padding()
 
@@ -116,6 +127,7 @@ struct RecordingView: View {
                     DispatchQueue.main.async {
                         switch result {
                         case .success:
+                            elapsedSeconds = 0
                             showRecordingUI = true
                             startElapsedTimer()
                         case .failure(let err):
