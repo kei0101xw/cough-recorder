@@ -3,18 +3,19 @@ import SwiftUI
 struct ThankYouView: View {
     @Binding var navigationPath: [String]
     @EnvironmentObject var session: RecordingSession
+    @Environment(\.horizontalSizeClass) private var hSize
     
     var body: some View {
         VStack {
             Text("ご協力ありがとうございました")
-                .font(.system(size: 30, weight: .regular))
+                .font(.system(size: AppUI.titleFontSize(hSize: hSize), weight: .regular))
                 .padding(.vertical, 12)
             Divider()
             Spacer()
             Image(.thankYou)
                 .resizable()
                 .scaledToFit()
-                .frame(height: 250)
+                .frame(height: Layout.imageHeight(hSize))
             Spacer();
             VStack(spacing: 8) {
                 Text("あなたの参加者ID:")
@@ -24,7 +25,6 @@ struct ThankYouView: View {
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.blue)
                     .padding(.vertical, 12)
-                    .padding(.horizontal, 24)
                     
             }
             .frame(width: UIScreen.main.bounds.width / 2)
@@ -40,8 +40,8 @@ struct ThankYouView: View {
             参加者IDは、今後、あなたの匿名化されたデータを九州大学へ削除依頼する際に必要となりますので、必ず保管してください。
             その後、咳や発熱、息切れなど新たに症状が出た場合は、再度、最新の咳の音を投稿してください。
             """)
-            .font(.system(size: 20))
-            .padding(.horizontal, 100)
+            .font(.system(size: AppUI.sentenceFontSize(hSize: hSize)))
+            .padding(.horizontal, Layout.horizontalPadding(hSize))
             .frame(maxWidth: .infinity)
             Spacer();
             Divider()
@@ -50,8 +50,8 @@ struct ThankYouView: View {
             }) {
                 Text("ホームへ戻る")
                     .frame(width: UIScreen.main.bounds.width / 2)
-                    .frame(height: 60)
-                    .font(.system(size: 32))
+                    .frame(height: AppUI.buttonHeight(hSize: hSize))
+                    .font(.system(size: AppUI.buttonFontSize(hSize: hSize)))
                     .padding(.horizontal)
                     .background(Color.blue)
                     .foregroundColor(.white)
@@ -63,6 +63,17 @@ struct ThankYouView: View {
             session.sessionReset()
         }
         .navigationBarBackButtonHidden(true)
+    }
+}
+
+extension ThankYouView {
+    enum Layout {
+        static func imageHeight(_ hSize: UserInterfaceSizeClass?) -> CGFloat {
+            (hSize == .compact) ? 150 : 250
+        }
+        static func horizontalPadding(_ hSize: UserInterfaceSizeClass?) -> CGFloat {
+            (hSize == .compact) ? 50 : 100
+        }
     }
 }
 

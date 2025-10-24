@@ -4,6 +4,7 @@ import AVFoundation
 struct RecordingReviewView: View {
     @Binding var navigationPath: [String]
     @EnvironmentObject var session: RecordingSession
+    @Environment(\.horizontalSizeClass) private var hSize
 
     @State private var player: AVAudioPlayer?
     @State private var isPlaying = false
@@ -15,7 +16,7 @@ struct RecordingReviewView: View {
     var body: some View {
         VStack {
             Text("録音の確認")
-                .font(.system(size: 30, weight: .regular))
+                .font(.system(size: AppUI.titleFontSize(hSize: hSize), weight: .regular))
                 .padding(.vertical, 12)
 
             Divider()
@@ -28,25 +29,25 @@ struct RecordingReviewView: View {
                 Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 300, height: 300)
+                    .frame(width: Layout.imageHeight(hSize), height: Layout.imageHeight(hSize))
                     .foregroundColor(.red)
             }
 
             Spacer()
 
             Text("以下の項目をご確認ください。")
-                .font(.system(size: 25))
+                .font(.system(size: Layout.fontSize(hSize)))
 
             VStack(alignment: .leading) {
                 HStack {
                     NumberCircle(number: 1)
                     Text("咳以外の音が入っていないか")
-                        .font(.system(size: 25))
+                        .font(.system(size: Layout.fontSize(hSize)))
                 }
                 HStack {
                     NumberCircle(number: 2)
                     Text("咳が途中で切れていないか")
-                        .font(.system(size: 25))
+                        .font(.system(size: Layout.fontSize(hSize)))
                 }
             }
             .padding()
@@ -58,8 +59,9 @@ struct RecordingReviewView: View {
                     showRedoAlert = true
                 } label: {
                     Text("やり直す")
-                        .frame(maxWidth: .infinity, minHeight: 60)
-                        .font(.system(size: 32))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: AppUI.buttonHeight(hSize: hSize))
+                        .font(.system(size: AppUI.buttonFontSize(hSize: hSize)))
                         .padding(.horizontal)
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(10)
@@ -70,8 +72,9 @@ struct RecordingReviewView: View {
                     navigationPath.append("PatientInfoForm")
                 } label: {
                     Text("録音完了")
-                        .frame(maxWidth: .infinity, minHeight: 60)
-                        .font(.system(size: 32))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: AppUI.buttonHeight(hSize: hSize))
+                        .font(.system(size: AppUI.buttonFontSize(hSize: hSize), weight: .semibold))
                         .padding(.horizontal)
                         .background(Color.blue)
                         .foregroundColor(.white)
@@ -146,6 +149,17 @@ struct RecordingReviewView: View {
             navigationPath.removeLast(2)
         } else {
             navigationPath.removeAll()
+        }
+    }
+}
+
+extension RecordingReviewView {
+    enum Layout {
+        static func imageHeight(_ hSize: UserInterfaceSizeClass?) -> CGFloat {
+            (hSize == .compact) ? 200 : 300
+        }
+        static func fontSize(_ hSize: UserInterfaceSizeClass?) -> CGFloat {
+            (hSize == .compact) ? 17 : 25
         }
     }
 }

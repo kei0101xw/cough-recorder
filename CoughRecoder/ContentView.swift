@@ -5,6 +5,8 @@ struct ContentView: View {
     @EnvironmentObject var session: RecordingSession
     @EnvironmentObject var importer: ImportCoordinator
     @EnvironmentObject var auth: AuthManager
+    @Environment(\.horizontalSizeClass) private var hSize
+    @Environment(\.verticalSizeClass)   private var vSize
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("cr_hasConsented") private var hasConsented = false
     @State private var showConsent = false
@@ -20,212 +22,425 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack(path: $navigationPath) {
-            ZStack {
-                Color.blue.ignoresSafeArea()
-
-                VStack {
-                    Spacer()
-                    HStack {
-                        Image(.appTitle)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 130)
-                        Text("Cough Recorder")
-                            .font(.system(size: 60)).bold()
-                            .foregroundColor(.white)
-                    }
-                    Spacer()
-                    Rectangle()
-                        .fill(Color.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 450)
-                        .clipShape(.rect(
-                            topLeadingRadius: 50,
-                            bottomLeadingRadius: 0,
-                            bottomTrailingRadius: 0,
-                            topTrailingRadius: 50
-                        ))
-                }
-                .edgesIgnoringSafeArea(.all)
-
-                TimelineView(.periodic(from: .now, by: 1)) { context in
-                    let remain = remainingSeconds(at: context.date)
-                    let cooling = remain > 0
+            switch (hSize ?? .regular) {
+            case (.compact):
+                ZStack {
+                    Color.blue.ignoresSafeArea()
 
                     VStack {
                         Spacer()
-                        VStack(spacing: 30) {
-                            if auth.isAuthenticated {
-                                Button {
-                                    navigationPath.append("PreRecording")
-                                    session.sessionReset()
-                                } label: {
-                                    HStack(spacing: 20) {
-                                        Spacer()
-                                        Text("録音する")
-                                            .font(.system(size: 30)).bold()
-                                        Image(systemName: "mic.fill")
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(height: 40)
-                                        Spacer()
-                                    }
-                                }
-                                .frame(width: UIScreen.main.bounds.width / 2)
-                                .frame(height: 80)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(20)
-                                .disabled(cooling)
-                                .opacity(cooling ? 0.5 : 1.0)
-                                .overlay(
-                                    Group {
-                                        if cooling {
-                                            Text("あと \(remain) 秒")
-                                                .font(
-                                                    .system(
-                                                        size: 16,
-                                                        weight: .bold
-                                                    )
-                                                )
-                                                .padding(30)
-                                                .foregroundColor(.white)
-                                        }
-                                    }
-                                        .padding(.trailing, 12),
-                                    alignment: .trailing
-                                )
-
-                                VStack {
-                                    Button {
-                                        navigationPath.append("CoughLog")
-                                    } label: {
-                                        HStack(spacing: 20)  {
-                                            Text("咳記録ログ")
-                                                .font(.system(size: 30)).bold()
-                                            Image(
-                                                systemName: "list.bullet.rectangle.fill"
-                                            )
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(height: 30)
-                                        }
-                                        .frame(
-                                            width: UIScreen.main.bounds.width / 2
-                                        )
-                                        .frame(height: 80)
-                                        .foregroundColor(
-                                            Color.primary.opacity(0.7)
-                                        )
-                                        .background(Color(.systemGray5))
-                                        .cornerRadius(20)
-                                    }
-                                }
-                            }
-                            else {
-                                VStack(spacing: 0) {
-                                    Button {
-                                        navigationPath.append("Login")
-                                    } label: {
-                                        HStack(spacing: 16) {
-                                            Text("ログイン")
-                                                .font(.system(size: 28, weight: .semibold
-                                                    )
-                                                )
-                                        }
-                                        .frame(width: UIScreen.main.bounds.width / 2)
-                                        .frame(height: 80)
-                                        .background(Color.blue)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(20)
-                                    }
-                                }
-                            }
-                        }
-                        .padding(.bottom, 120)
-                    }
-                }
-            }
-            .navigationDestination(for: String.self) { value in
-                switch value {
-                case "CoughLog": CoughLogView(navigationPath: $navigationPath)
-                case "PreRecording": PreRecordingView(
-                    navigationPath: $navigationPath
-                )
-                case "Recording": RecordingView(navigationPath: $navigationPath)
-                case "RecordingReview": RecordingReviewView(
-                    navigationPath: $navigationPath
-                )
-                case "PatientInfoForm": PatientInfoFormView(
-                    navigationPath: $navigationPath
-                )
-                case "GenderAgeForm": GenderAgeFormView(
-                    navigationPath: $navigationPath
-                )
-                case "CurrentSymptomsForm": CurrentSymptomsFormView(
-                    navigationPath: $navigationPath
-                )
-                case "MedicalConditionForm": MedicalConditionFormView(
-                    navigationPath: $navigationPath
-                )
-                case "DementiaStatusForm": DementiaStatusFormView(
-                    navigationPath: $navigationPath
-                )
-                case "ThankYou": ThankYouView(navigationPath: $navigationPath)
-                case "Login": LoginView(
-                    navigationPath: $navigationPath
-                )
-                .onChange(of: auth.isAuthenticated) { _, new in
-                    if new {
-                        navigationPath.removeAll()
-                    }
-                }
-                default: EmptyView()
-                }
-            }
-            .toolbar {
-                if auth.isAuthenticated {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            showSettings = true
-                        } label: {
-                            Image(systemName: "gearshape")
+                        HStack {
+                            Image(.appTitle)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 28, height: 28)
+                                .frame(height: 80)
+                            Text("Cough Recorder")
+                                .font(.system(size: 30)).bold()
                                 .foregroundColor(.white)
-                                .accessibilityLabel("設定")
+                        }
+                        Spacer()
+                        Rectangle()
+                            .fill(Color.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 250)
+                            .clipShape(.rect(
+                                topLeadingRadius: 20,
+                                bottomLeadingRadius: 0,
+                                bottomTrailingRadius: 0,
+                                topTrailingRadius: 20
+                            ))
+                            .overlay(alignment: .center) {
+                                TimelineView(.periodic(from: .now, by: 1)) { context in
+                                    let remain = remainingSeconds(at: context.date)
+                                    let cooling = remain > 0
+
+                                    VStack {
+                                        VStack(spacing: 30) {
+                                            if auth.isAuthenticated {
+                                                Button {
+                                                    navigationPath.append("PreRecording")
+                                                    session.sessionReset()
+                                                } label: {
+                                                    HStack(spacing: 20) {
+                                                        Spacer()
+                                                        Text("録音する")
+                                                            .font(.system(size: AppUI.buttonFontSize(hSize:hSize))).bold()
+                                                        Image(systemName: "mic.fill")
+                                                            .resizable()
+                                                            .scaledToFit()
+                                                            .frame(height: 20)
+                                                        Spacer()
+                                                    }
+                                                }
+                                                .frame(width: UIScreen.main.bounds.width / 1.5)
+                                                .frame(height: AppUI.buttonHeight(hSize: hSize))
+                                                .background(Color.blue)
+                                                .foregroundColor(.white)
+                                                .cornerRadius(15)
+                                                .disabled(cooling)
+                                                .opacity(cooling ? 0.5 : 1.0)
+                                                .overlay(
+                                                    Group {
+                                                        if cooling {
+                                                            Text("あと \(remain) 秒")
+                                                                .font(
+                                                                    .system(
+                                                                        size: 16,
+                                                                        weight: .bold
+                                                                    )
+                                                                )
+                                                                .padding(30)
+                                                                .foregroundColor(.white)
+                                                        }
+                                                    }
+                                                        .padding(.trailing, 12),
+                                                    alignment: .trailing
+                                                )
+
+                                                VStack {
+                                                    Button {
+                                                        navigationPath.append("CoughLog")
+                                                    } label: {
+                                                        HStack(spacing: 20)  {
+                                                            Text("咳記録ログ")
+                                                                .font(.system(size: AppUI.buttonFontSize(hSize:  hSize))).bold()
+                                                            Image(
+                                                                systemName: "list.bullet.rectangle.fill"
+                                                            )
+                                                            .resizable()
+                                                            .scaledToFit()
+                                                            .frame(height: 15)
+                                                        }
+                                                        .frame(
+                                                            width: UIScreen.main.bounds.width / 1.5
+                                                        )
+                                                        .frame(height: AppUI.buttonHeight(hSize: hSize))
+                                                        .foregroundColor(
+                                                            Color.primary.opacity(0.7)
+                                                        )
+                                                        .background(Color(.systemGray5))
+                                                        .cornerRadius(15)
+                                                    }
+                                                }
+                                            }
+                                            else {
+                                                VStack(spacing: 0) {
+                                                    Button {
+                                                        navigationPath.append("Login")
+                                                    } label: {
+                                                        HStack(spacing: 16) {
+                                                            Text("ログイン")
+                                                                .font(.system(size: AppUI.buttonFontSize(hSize: hSize), weight: .semibold
+                                                                    )
+                                                                )
+                                                        }
+                                                        .frame(width: UIScreen.main.bounds.width / 1.5)
+                                                        .frame(height: AppUI.buttonHeight(hSize: hSize))
+                                                        .background(Color.blue)
+                                                        .foregroundColor(.white)
+                                                        .cornerRadius(15)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                    }
+                    .edgesIgnoringSafeArea(.all)
+
+                    
+                }
+                .navigationDestination(for: String.self) { value in
+                    switch value {
+                    case "CoughLog": CoughLogView(navigationPath: $navigationPath)
+                    case "PreRecording": PreRecordingView(
+                        navigationPath: $navigationPath
+                    )
+                    case "Recording": RecordingView(navigationPath: $navigationPath)
+                    case "RecordingReview": RecordingReviewView(
+                        navigationPath: $navigationPath
+                    )
+                    case "PatientInfoForm": PatientInfoFormView(
+                        navigationPath: $navigationPath
+                    )
+                    case "GenderAgeForm": GenderAgeFormView(
+                        navigationPath: $navigationPath
+                    )
+                    case "CurrentSymptomsForm": CurrentSymptomsFormView(
+                        navigationPath: $navigationPath
+                    )
+                    case "MedicalConditionForm": MedicalConditionFormView(
+                        navigationPath: $navigationPath
+                    )
+                    case "DementiaStatusForm": DementiaStatusFormView(
+                        navigationPath: $navigationPath
+                    )
+                    case "ThankYou": ThankYouView(navigationPath: $navigationPath)
+                    case "Login": LoginView(
+                        navigationPath: $navigationPath
+                    )
+                    .onChange(of: auth.isAuthenticated) { _, new in
+                        if new {
+                            navigationPath.removeAll()
+                        }
+                    }
+                    default: EmptyView()
+                    }
+                }
+                .toolbar {
+                    if auth.isAuthenticated {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                showSettings = true
+                            } label: {
+                                Image(systemName: "gearshape")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 28, height: 28)
+                                    .foregroundColor(.white)
+                                    .accessibilityLabel("設定")
+                            }
                         }
                     }
                 }
-            }
-            .sheet(isPresented: $showSettings) {
-                SettingsView()
-                    .environmentObject(auth)
-            }
-            .fullScreenCover(isPresented: $showConsent) {
-                ConsentSheet {
-                    hasConsented = true
-                    showConsent = false
+                .sheet(isPresented: $showSettings) {
+                    SettingsView()
+                        .environmentObject(auth)
                 }
-                .interactiveDismissDisabled(true)
-            }
-            .onAppear {
-                if !hasConsented { showConsent = true }
-            }
-            .onChange(of: scenePhase) { oldValue, newValue in
-                if newValue == .active {
-                    auth.refreshIfNeeded()
+                .fullScreenCover(isPresented: $showConsent) {
+                    ConsentSheet {
+                        hasConsented = true
+                        showConsent = false
+                    }
+                    .interactiveDismissDisabled(true)
                 }
+                .onAppear {
+                    if !hasConsented { showConsent = true }
+                }
+                .onChange(of: scenePhase) { oldValue, newValue in
+                    if newValue == .active {
+                        auth.refreshIfNeeded()
+                    }
+                }
+                .onOpenURL { url in
+                    ImportCoordinator.shared.handleIncomingFile(url: url)
+                }
+                .onReceive(importer.$lastImportedURL) { imported in
+                    guard let imported else { return }
+                    session.recordingURL = imported
+                    navigationPath = ["PatientInfoForm"]
+                }
+            case (.regular):
+                ZStack {
+                    Color.blue.ignoresSafeArea()
+
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Image(.appTitle)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 130)
+                            Text("Cough Recorder")
+                                .font(.system(size: 60)).bold()
+                                .foregroundColor(.white)
+                        }
+                        Spacer()
+                        Rectangle()
+                            .fill(Color.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 450)
+                            .clipShape(.rect(
+                                topLeadingRadius: 50,
+                                bottomLeadingRadius: 0,
+                                bottomTrailingRadius: 0,
+                                topTrailingRadius: 50
+                            ))
+                            .overlay(alignment: .center) {
+                                TimelineView(.periodic(from: .now, by: 1)) { context in
+                                    let remain = remainingSeconds(at: context.date)
+                                    let cooling = remain > 0
+
+                                    VStack {
+                                        VStack(spacing: 30) {
+                                            if auth.isAuthenticated {
+                                                Button {
+                                                    navigationPath.append("PreRecording")
+                                                    session.sessionReset()
+                                                } label: {
+                                                    HStack(spacing: 20) {
+                                                        Spacer()
+                                                        Text("録音する")
+                                                            .font(.system(size: 30)).bold()
+                                                        Image(systemName: "mic.fill")
+                                                            .resizable()
+                                                            .scaledToFit()
+                                                            .frame(height: 40)
+                                                        Spacer()
+                                                    }
+                                                }
+                                                .frame(width: UIScreen.main.bounds.width / 2)
+                                                .frame(height: 80)
+                                                .background(Color.blue)
+                                                .foregroundColor(.white)
+                                                .cornerRadius(20)
+                                                .disabled(cooling)
+                                                .opacity(cooling ? 0.5 : 1.0)
+                                                .overlay(
+                                                    Group {
+                                                        if cooling {
+                                                            Text("あと \(remain) 秒")
+                                                                .font(
+                                                                    .system(
+                                                                        size: 16,
+                                                                        weight: .bold
+                                                                    )
+                                                                )
+                                                                .padding(30)
+                                                                .foregroundColor(.white)
+                                                        }
+                                                    }
+                                                        .padding(.trailing, 12),
+                                                    alignment: .trailing
+                                                )
+
+                                                VStack {
+                                                    Button {
+                                                        navigationPath.append("CoughLog")
+                                                    } label: {
+                                                        HStack(spacing: 20)  {
+                                                            Text("咳記録ログ")
+                                                                .font(.system(size: 30)).bold()
+                                                            Image(
+                                                                systemName: "list.bullet.rectangle.fill"
+                                                            )
+                                                            .resizable()
+                                                            .scaledToFit()
+                                                            .frame(height: 30)
+                                                        }
+                                                        .frame(
+                                                            width: UIScreen.main.bounds.width / 2
+                                                        )
+                                                        .frame(height: 80)
+                                                        .foregroundColor(
+                                                            Color.primary.opacity(0.7)
+                                                        )
+                                                        .background(Color(.systemGray5))
+                                                        .cornerRadius(20)
+                                                    }
+                                                }
+                                            }
+                                            else {
+                                                VStack(spacing: 0) {
+                                                    Button {
+                                                        navigationPath.append("Login")
+                                                    } label: {
+                                                        HStack(spacing: 16) {
+                                                            Text("ログイン")
+                                                                .font(.system(size: 28, weight: .semibold
+                                                                    )
+                                                                )
+                                                        }
+                                                        .frame(width: UIScreen.main.bounds.width / 2)
+                                                        .frame(height: 80)
+                                                        .background(Color.blue)
+                                                        .foregroundColor(.white)
+                                                        .cornerRadius(20)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                    }
+                    .edgesIgnoringSafeArea(.all)
+                }
+                .navigationDestination(for: String.self) { value in
+                    switch value {
+                    case "CoughLog": CoughLogView(navigationPath: $navigationPath)
+                    case "PreRecording": PreRecordingView(
+                        navigationPath: $navigationPath
+                    )
+                    case "Recording": RecordingView(navigationPath: $navigationPath)
+                    case "RecordingReview": RecordingReviewView(
+                        navigationPath: $navigationPath
+                    )
+                    case "PatientInfoForm": PatientInfoFormView(
+                        navigationPath: $navigationPath
+                    )
+                    case "GenderAgeForm": GenderAgeFormView(
+                        navigationPath: $navigationPath
+                    )
+                    case "CurrentSymptomsForm": CurrentSymptomsFormView(
+                        navigationPath: $navigationPath
+                    )
+                    case "MedicalConditionForm": MedicalConditionFormView(
+                        navigationPath: $navigationPath
+                    )
+                    case "DementiaStatusForm": DementiaStatusFormView(
+                        navigationPath: $navigationPath
+                    )
+                    case "ThankYou": ThankYouView(navigationPath: $navigationPath)
+                    case "Login": LoginView(
+                        navigationPath: $navigationPath
+                    )
+                    .onChange(of: auth.isAuthenticated) { _, new in
+                        if new {
+                            navigationPath.removeAll()
+                        }
+                    }
+                    default: EmptyView()
+                    }
+                }
+                .toolbar {
+                    if auth.isAuthenticated {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                showSettings = true
+                            } label: {
+                                Image(systemName: "gearshape")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 28, height: 28)
+                                    .foregroundColor(.white)
+                                    .accessibilityLabel("設定")
+                            }
+                        }
+                    }
+                }
+                .sheet(isPresented: $showSettings) {
+                    SettingsView()
+                        .environmentObject(auth)
+                }
+                .fullScreenCover(isPresented: $showConsent) {
+                    ConsentSheet {
+                        hasConsented = true
+                        showConsent = false
+                    }
+                    .interactiveDismissDisabled(true)
+                }
+                .onAppear {
+                    if !hasConsented { showConsent = true }
+                }
+                .onChange(of: scenePhase) { oldValue, newValue in
+                    if newValue == .active {
+                        auth.refreshIfNeeded()
+                    }
+                }
+                .onOpenURL { url in
+                    ImportCoordinator.shared.handleIncomingFile(url: url)
+                }
+                .onReceive(importer.$lastImportedURL) { imported in
+                    guard let imported else { return }
+                    session.recordingURL = imported
+                    navigationPath = ["PatientInfoForm"]
+                }
+            @unknown default:
+                Text("aiueo")
             }
-            .onOpenURL { url in
-                ImportCoordinator.shared.handleIncomingFile(url: url)
-            }
-            .onReceive(importer.$lastImportedURL) { imported in
-                guard let imported else { return }
-                session.recordingURL = imported
-                navigationPath = ["PatientInfoForm"]
-            }
+            
         }
     }
 }

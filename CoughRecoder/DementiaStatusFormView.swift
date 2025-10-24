@@ -3,6 +3,7 @@ import SwiftUI
 struct DementiaStatusFormView: View {
     @Binding var navigationPath: [String]
     @EnvironmentObject var session: RecordingSession
+    @Environment(\.horizontalSizeClass) private var hSize
 
     @State private var showingAlert = false
     @State private var alertTitle = ""
@@ -19,7 +20,7 @@ struct DementiaStatusFormView: View {
     var body: some View {
         VStack(spacing: 0) {
             Text("認知症の有無を選択してください")
-                .font(.system(size: 30, weight: .regular))
+                .font(.system(size: AppUI.titleFontSize(hSize: hSize), weight: .regular))
                 .padding(.vertical, 12)
 
             Form {
@@ -30,8 +31,8 @@ struct DementiaStatusFormView: View {
                 }
                 .pickerStyle(.inline)
                 .padding(.vertical, 10)
-                .frame(height: 50)
-                .font(.system(size: 24))
+                .font(.system(size: AppUI.fieldFontSize(hSize: hSize)))
+                .frame(height: AppUI.pickFormHeight(hSize: hSize), alignment: .leading)
             }
 
             Spacer()
@@ -42,8 +43,8 @@ struct DementiaStatusFormView: View {
                 } label: {
                     Text("戻る")
                         .frame(maxWidth: .infinity)
-                        .frame(height: 60)
-                        .font(.system(size: 32))
+                        .frame(height: AppUI.buttonHeight(hSize: hSize))
+                        .font(.system(size: AppUI.buttonFontSize(hSize: hSize)))
                         .padding(.horizontal)
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(10)
@@ -62,14 +63,13 @@ struct DementiaStatusFormView: View {
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 60)
-                    .font(.system(size: 32, weight: .semibold))
+                    .frame(height: AppUI.buttonHeight(hSize: hSize))
+                    .font(.system(size: AppUI.buttonFontSize(hSize: hSize), weight: .semibold))
                     .padding(.horizontal)
                     .background((session.dementiaStatus.isEmpty || isUploading) ? Color.blue.opacity(0.4) : Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(10)
                 }
-                // 送信中は無効化 + タップを物理的に通さない
                 .disabled(session.dementiaStatus.isEmpty || isUploading)
                 .allowsHitTesting(!isUploading)
             }

@@ -4,6 +4,7 @@ struct CurrentSymptomsFormView: View {
     @Binding var navigationPath: [String]
     
     @EnvironmentObject var session: RecordingSession
+    @Environment(\.horizontalSizeClass) private var hSize
     
     private let symptomOptions: [String] = [
         "なし",
@@ -21,19 +22,20 @@ struct CurrentSymptomsFormView: View {
     var body: some View {
         VStack(spacing: 0) {
             Text("現在の症状を選択してください")
-                .font(.system(size: 35, weight: .regular))
+                .font(.system(size: AppUI.titleFontSize(hSize: hSize), weight: .regular))
                 .padding(.vertical, 12)
             
             List(selection: $session.symptoms) {
                 Section {
                     ForEach(symptomOptions, id: \.self) { symptom in
                         Text(symptom)
-                            .font(.system(size: 24))
+                            .font(.system(size: AppUI.fieldFontSize(hSize: hSize)))
+                            .frame(height: AppUI.pickFormHeight(hSize: hSize), alignment: .leading)
                             .padding(.vertical, 6)
                     }
                 } header: {
                     Text("該当するものを全て選択してください")
-                        .font(.system(size: 24))
+                        .font(.system(size: AppUI.sectionHeaderFontSize(hSize: hSize)))
                         .padding(EdgeInsets(top: 10, leading: 0, bottom: 10, trailing: 0))
                 }
             }
@@ -47,8 +49,8 @@ struct CurrentSymptomsFormView: View {
                 }) {
                     Text("戻る")
                         .frame(maxWidth: .infinity)
-                        .frame(height: 60)
-                        .font(.system(size: 32))
+                        .frame(height: AppUI.buttonHeight(hSize: hSize))
+                        .font(.system(size: AppUI.buttonFontSize(hSize: hSize)))
                         .padding(.horizontal)
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(10)
@@ -57,10 +59,10 @@ struct CurrentSymptomsFormView: View {
                 Button(action: {
                     navigationPath.append("MedicalConditionForm")
                 }) {
-                    Text("次へ（選択中: \(session.symptoms.count) 件）")
+                    Text(" 次へ（\(session.symptoms.count) 件選択）")
                         .frame(maxWidth: .infinity)
-                        .frame(height: 60)
-                        .font(.system(size: 32, weight: .semibold))
+                        .frame(height: AppUI.buttonHeight(hSize: hSize))
+                        .font(.system(size: AppUI.buttonFontSize(hSize: hSize), weight: .semibold))
                         .padding(.horizontal)
                         .background(session.symptoms.isEmpty ? Color.blue.opacity(0.4) : Color.blue)
                         .foregroundColor(.white)

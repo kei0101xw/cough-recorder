@@ -4,6 +4,7 @@ import AVFoundation
 struct CoughLogView: View {
     @Binding var navigationPath: [String]
     @StateObject private var store = SessionStore()
+    @Environment(\.horizontalSizeClass) private var hSize
 
     private let dateFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -15,19 +16,21 @@ struct CoughLogView: View {
     var body: some View {
         VStack {
             Text("咳記録ログ画面")
-                .font(.system(size: 30, weight: .regular))
+                .font(.system(size: AppUI.titleFontSize(hSize: hSize), weight: .regular))
                 .padding(.vertical, 12)
             
             Divider()
+            
+            let isCompact = (hSize == .compact)
 
             if store.records.isEmpty {
                 Spacer()
                 Text("保存済みの記録はまだありません。")
-                    .font(.system(size: 24))
+                    .font(.system(size: 20))
                     .foregroundColor(.secondary)
                 Spacer()
             } else {
-                ScrollView([.vertical]) {
+                ScrollView(isCompact ? [.vertical, .horizontal] : [.vertical]) {
                     Grid(alignment: .leading, horizontalSpacing: 60, verticalSpacing: 15) {
 
                         GridRow {
@@ -38,7 +41,7 @@ struct CoughLogView: View {
                             Text("年齢").bold()
                             Text("音声").bold()
                         }
-                        .font(.system(size: 20))
+                        .font(.system(size: AppUI.sentenceFontSize(hSize: hSize)))
                         .padding(.bottom, 5)
 
                         Divider().gridCellUnsizedAxes(.horizontal)
@@ -57,7 +60,7 @@ struct CoughLogView: View {
                             Divider().gridCellUnsizedAxes(.horizontal)
                         }
                     }
-                    .font(.system(size: 20))
+                    .font(.system(size: AppUI.sentenceFontSize(hSize: hSize)))
                     .padding()
                 }
             }
@@ -71,8 +74,8 @@ struct CoughLogView: View {
             }) {
                 Text("ホームへ戻る")
                     .frame(width: UIScreen.main.bounds.width / 2)
-                    .frame(height: 60)
-                    .font(.system(size: 32))
+                    .frame(height: AppUI.buttonHeight(hSize: hSize))
+                    .font(.system(size: AppUI.buttonFontSize(hSize: hSize)))
                     .padding(.horizontal)
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
@@ -115,7 +118,8 @@ struct LogAudioPreviewButton: View {
                         .scaledToFit()
                         .frame(height: 26)
                     Text(isPlaying ? "停止" : "再生")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
+                    // 18かも！！！！！！！！！！！！！！！！！！！！！！！！！！！
                 }
             }
             .buttonStyle(.plain)

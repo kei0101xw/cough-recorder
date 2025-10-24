@@ -3,6 +3,7 @@ import SwiftUI
 struct RecordingView: View {
     @Binding var navigationPath: [String]
     @EnvironmentObject var session: RecordingSession
+    @Environment(\.horizontalSizeClass) private var hSize
 
     @StateObject private var audioRecorder = AudioRecorder()
 
@@ -25,7 +26,7 @@ struct RecordingView: View {
             if showRecordingUI {
                 Spacer()
                 Text("録音中")
-                    .font(.system(size: 60))
+                    .font(.system(size: Layout.redordingFontSize(hSize)))
                     .foregroundColor(.white)
                     .padding(32)
                     .background(Color.red)
@@ -34,7 +35,7 @@ struct RecordingView: View {
                 Spacer()
 
                 Text(formattedElapsed(elapsedSeconds))
-                    .font(.system(size: 40))
+                    .font(.system(size: AppUI.titleFontSize(hSize: hSize)))
 
                 Spacer()
                 
@@ -52,8 +53,9 @@ struct RecordingView: View {
                         navigationPath.removeLast()
                     } label: {
                         Text("やり直し")
-                            .frame(maxWidth: .infinity, minHeight: 60)
-                            .font(.system(size: 32))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: AppUI.buttonHeight(hSize: hSize))
+                            .font(.system(size: AppUI.buttonFontSize(hSize: hSize)))
                             .padding(.horizontal)
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(10)
@@ -81,8 +83,9 @@ struct RecordingView: View {
 //                            : (canFinish ? "録音完了" : "録音完了（あと\(remainingToFinish)秒）")
                             : "録音完了"
                         )
-                        .frame(maxWidth: .infinity, minHeight: 60)
-                        .font(.system(size: 32))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: AppUI.buttonHeight(hSize: hSize))
+                        .font(.system(size: AppUI.buttonFontSize(hSize: hSize)))
                         .padding(.horizontal)
                         .background(canFinish ? Color.blue : Color.gray)
                         .foregroundColor(.white)
@@ -95,12 +98,13 @@ struct RecordingView: View {
             } else {
                 Spacer()
                 Text("カウントダウンが終了すると自動で録音が開始されます")
-                    .font(.system(size: 35))
+                    .font(.system(size: AppUI.titleFontSize(hSize: hSize)))
+                    .padding(.horizontal, Layout.horizontalPadding(hSize))
                 Spacer()
                 Text("\(countdown)")
-                    .font(.system(size: 200))
+                    .font(.system(size: Layout.countDownFontSize(hSize)))
                     .bold()
-                    .frame(width: 400, height: 400)
+                    .frame(width: Layout.imageHeight(hSize), height: Layout.imageHeight(hSize))
                     .background(Color.white)
                     .clipShape(Circle())
                     .overlay(Circle().stroke(Color.blue, lineWidth: 5))
@@ -157,6 +161,23 @@ struct RecordingView: View {
         let m = seconds / 60
         let s = seconds % 60
         return String(format: "%02d:%02d", m, s)
+    }
+}
+
+extension RecordingView {
+    enum Layout {
+        static func imageHeight(_ hSize: UserInterfaceSizeClass?) -> CGFloat {
+            (hSize == .compact) ? 200 : 400
+        }
+        static func horizontalPadding(_ hSize: UserInterfaceSizeClass?) -> CGFloat {
+            (hSize == .compact) ? 50 : 0
+        }
+        static func countDownFontSize(_ hSize: UserInterfaceSizeClass?) -> CGFloat {
+            (hSize == .compact) ? 100 : 200
+        }
+        static func redordingFontSize(_ hSize: UserInterfaceSizeClass?) -> CGFloat {
+            (hSize == .compact) ? 30 : 60
+        }
     }
 }
 

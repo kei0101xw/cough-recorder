@@ -4,6 +4,7 @@ struct GenderAgeFormView: View {
     @Binding var navigationPath: [String]
     
     @EnvironmentObject var session: RecordingSession
+    @Environment(\.horizontalSizeClass) private var hSize
     
     private var ageBindingForStepper: Binding<Int> {
             Binding(
@@ -15,27 +16,29 @@ struct GenderAgeFormView: View {
     var body: some View {
         VStack {
             Text("あなたの情報を入力してください")
-                .font(.system(size: 35))
+                .font(.system(size: AppUI.titleFontSize(hSize: hSize), weight: .regular))
+            
             
             Form {
                 Picker("性別を選択してください", selection: $session.gender) {
                     Text("男性").tag("male")
                     Text("女性").tag("female")
                     Text("その他").tag("その他")
-                }
+                } // ここのフォントサイズ変更から始める！！！！！！！！！！！！！！！！！！！！！！！！！
                 .pickerStyle(.inline)
                 .padding(.vertical, 10)
-                .frame(height: 50)
-                .font(.system(size: 24))
+                .font(.system(size: AppUI.fieldFontSize(hSize: hSize)))
+                .frame(height: AppUI.pickFormHeight(hSize: hSize), alignment: .leading)
                 
                 Section(header:
-                            Text("年齢を入力してください").font(.system(size: 30))) {
+                            Text("年齢を入力してください")
+                                .font(.system(size: AppUI.sectionHeaderFontSize(hSize: hSize)))) {
                     HStack {
                         TextField("年齢を入力してください", value: $session.age, format: .number)
                             .keyboardType(.numberPad)
                             .padding(.vertical, 10)
-                            .frame(height: 70)
-                            .font(.system(size: 24))
+                            .frame(height: AppUI.fieldHeight(hSize: hSize))
+                            .font(.system(size: AppUI.fieldFontSize(hSize: hSize)))
                         
                         Stepper("", value: ageBindingForStepper, in: 0...120, step: 1)
                             .labelsHidden()
@@ -52,8 +55,8 @@ struct GenderAgeFormView: View {
                 }) {
                     Text("戻る")
                         .frame(maxWidth: .infinity)
-                        .frame(height: 60)
-                        .font(.system(size: 32))
+                        .frame(height: AppUI.buttonHeight(hSize: hSize))
+                        .font(.system(size: AppUI.buttonFontSize(hSize: hSize)))
                         .padding(.horizontal)
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(10)
@@ -63,8 +66,8 @@ struct GenderAgeFormView: View {
                 }) {
                     Text("次へ")
                         .frame(maxWidth: .infinity)
-                        .frame(height: 60)
-                        .font(.system(size: 32))
+                        .frame(height: AppUI.buttonHeight(hSize: hSize))
+                        .font(.system(size: AppUI.buttonFontSize(hSize: hSize), weight: .semibold))
                         .padding(.horizontal)
                         .background((session.gender.isEmpty || session.age == nil) ? Color.blue.opacity(0.4) : Color.blue)                        .foregroundColor(.white)
                         .foregroundColor(.white)
