@@ -5,6 +5,7 @@ struct MedicalConditionFormView: View {
     @EnvironmentObject var session: RecordingSession
     @Environment(\.horizontalSizeClass) private var hSize
 
+    private let otherKey = "その他"
     private let conditionOptions: [String] = [
         "なし（健康）",
         "インフルエンザA型",
@@ -15,8 +16,12 @@ struct MedicalConditionFormView: View {
         "気管支炎",
         "結核",
         "COPD・肺気腫",
-        "喘息"
+        "喘息",
+        "その他"
     ]
+
+    @State private var otherText: String = ""
+    @FocusState private var otherFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -27,10 +32,42 @@ struct MedicalConditionFormView: View {
             List(selection: $session.conditions) {
                 Section {
                     ForEach(conditionOptions, id: \.self) { symptom in
-                        Text(symptom)
-                            .font(.system(size: AppUI.fieldFontSize(hSize: hSize)))
-                            .frame(height: AppUI.pickFormHeight(hSize: hSize), alignment: .leading)
-                            .padding(.vertical, 6)
+                        if symptom == otherKey {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(otherKey)
+                                    .font(.system(size: AppUI.fieldFontSize(hSize: hSize)))
+                                    .frame(height: AppUI.pickFormHeight(hSize: hSize), alignment: .leading)
+                                    .padding(.vertical, 6)
+
+                                if session.conditions.contains(otherKey) {
+                                    TextField("病状を入力", text: $otherText)
+                                        .textInputAutocapitalization(.none)
+                                        .autocorrectionDisabled()
+                                        .submitLabel(.done)
+                                        .focused($otherFocused)
+                                        .textFieldStyle(.plain)
+                                        .frame(height: AppUI.fieldHeight(hSize: hSize))
+                                        .font(.system(size: AppUI.fieldFontSize(hSize: hSize)))
+                                        .padding(.horizontal, 12)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(Color.secondary.opacity(0.35), lineWidth: 1)
+                                                .fill(Color.white.opacity(1))
+                                        )
+                                        .textFieldStyle(.roundedBorder)
+                                        .onAppear {
+                                            DispatchQueue.main.async {
+                                                self.otherFocused = true
+                                            }
+                                        }
+                                }
+                            }
+                        } else {
+                            Text(symptom)
+                                .font(.system(size: AppUI.fieldFontSize(hSize: hSize)))
+                                .frame(height: AppUI.pickFormHeight(hSize: hSize), alignment: .leading)
+                                .padding(.vertical, 6)
+                        }
                     }
                 } header: {
                     Text("該当するものを全て選択してください")
@@ -41,7 +78,7 @@ struct MedicalConditionFormView: View {
             .environment(\.editMode, .constant(.active))
 
             Spacer()
-            
+
             HStack {
                 Button(action: {
                     navigationPath.removeLast()
@@ -55,10 +92,8 @@ struct MedicalConditionFormView: View {
                         .cornerRadius(10)
                 }
 
-                Button(action: {
-                    navigationPath.append("DementiaStatusForm")
-                }) {
-                    Text(" 次へ（\(session.conditions.count) 件選択）")
+                Button(action: onTapNext) {
+                    Text(" 次へ（\(selectedCountForDisplay) 件選択）")
                         .frame(maxWidth: .infinity)
                         .frame(height: AppUI.buttonHeight(hSize: hSize))
                         .font(.system(size: AppUI.buttonFontSize(hSize: hSize), weight: .semibold))
@@ -72,6 +107,30 @@ struct MedicalConditionFormView: View {
             .padding()
         }
         .navigationBarBackButtonHidden(true)
+    }
+
+    private var selectedCountForDisplay: Int {
+        session.conditions.count
+    }
+
+    private func onTapNext() {
+        var selected = session.conditions
+
+        if selected.contains(otherKey) {
+            let trimmed = otherText.trimmingCharacters(in: .whitespacesAndNewlines)
+            selected.remove(otherKey)
+
+            if !trimmed.isEmpty {
+                selected.insert("その他（\(trimmed)）")
+            } else {
+                selected.insert(otherKey)
+            }
+            DispatchQueue.main.async {
+                session.conditions = selected
+            }
+        }
+
+        navigationPath.append("DementiaStatusForm")
     }
 }
 
