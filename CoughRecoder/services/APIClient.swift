@@ -60,15 +60,41 @@ enum APIClient {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.httpBody = try JSONEncoder().encode(body)
 
-        let (data, resp) = try await URLSession.shared.data(for: req)
-        guard let http = resp as? HTTPURLResponse else { throw APIError.invalidResponse }
-        guard (200..<300).contains(http.statusCode) else { throw APIError.http(http.statusCode) }
+        // 送信の待ち時間を計測開始
+        let startTime = Date()
+        
+        do {
+            let (data, resp) = try await URLSession.shared.data(for: req)
+            
+            // 送信完了時刻から待ち時間を計算
+            let duration = Date().timeIntervalSince(startTime)
+            
+            guard let http = resp as? HTTPURLResponse else { throw APIError.invalidResponse }
+            guard (200..<300).contains(http.statusCode) else { throw APIError.http(http.statusCode) }
 
-        if let decoded = try? JSONDecoder().decode(UploadResponse.self, from: data),
-           let msg = decoded.message {
-            return msg
-        } else {
-            return String(data: data, encoding: .utf8) ?? "Uploaded"
+            // 成功時のログを記録
+            PerformanceLogger.shared.logPerformance(
+                eventName: "API Upload",
+                duration: duration,
+                success: true
+            )
+
+            if let decoded = try? JSONDecoder().decode(UploadResponse.self, from: data),
+               let msg = decoded.message {
+                return msg
+            } else {
+                return String(data: data, encoding: .utf8) ?? "Uploaded"
+            }
+        } catch {
+            // 失敗時のログを記録
+            let duration = Date().timeIntervalSince(startTime)
+            PerformanceLogger.shared.logPerformance(
+                eventName: "API Upload",
+                duration: duration,
+                success: false,
+                errorMessage: error.localizedDescription
+            )
+            throw error
         }
     }
 }
