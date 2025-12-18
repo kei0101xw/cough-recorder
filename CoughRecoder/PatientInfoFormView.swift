@@ -27,6 +27,7 @@ struct PatientInfoFormView: View {
             Form {
                 Section(header: Text("参加者ID").font(.system(size: AppUI.sectionHeaderFontSize(hSize: hSize)))) {
                     TextField("参加者IDを入力してください", text: $session.id)
+                        .keyboardType(.numberPad)
                         .padding(.vertical, 10)
                         .frame(height: AppUI.fieldHeight(hSize: hSize))
                         .font(.system(size: AppUI.fieldFontSize(hSize: hSize)))

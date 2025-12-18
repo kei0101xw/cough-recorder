@@ -24,7 +24,7 @@ struct GenderAgeFormView: View {
                     Text("男性").tag("male")
                     Text("女性").tag("female")
                     Text("その他").tag("その他")
-                } // ここのフォントサイズ変更から始める！！！！！！！！！！！！！！！！！！！！！！！！！
+                }
                 .pickerStyle(.inline)
                 .padding(.vertical, 10)
                 .font(.system(size: AppUI.fieldFontSize(hSize: hSize)))
@@ -32,7 +32,8 @@ struct GenderAgeFormView: View {
                 
                 Section(header:
                             Text("年齢を入力してください")
-                                .font(.system(size: AppUI.sectionHeaderFontSize(hSize: hSize)))) {
+                                .font(.system(size: AppUI.sectionHeaderFontSize(hSize: hSize)))
+                                .keyboardType(.numberPad)) {
                     HStack {
                         TextField("年齢を入力してください", value: $session.age, format: .number)
                             .keyboardType(.numberPad)
