@@ -15,6 +15,7 @@ struct PatientInfoFormView: View {
         "マナハウス",
         "海の花",
         "ソーシャルライフ糸島",
+        "シーサイド病院",
         "その他"
     ]
 
