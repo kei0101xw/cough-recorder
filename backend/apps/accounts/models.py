@@ -53,8 +53,8 @@ class CustomUser(AbstractUser):
     last_name = None
     name = models.CharField(max_length=100)
     email = models.EmailField(blank=True, null=True)
-    role = models.ForeignKey(Role, on_delete=models.CASCADE, blank=True, null=True)
-    facility = models.ForeignKey(Facility, on_delete=models.CASCADE, blank=True, null=True) # superuserやstaffは施設に所属しないため、blank,null=Trueにする
+    role = models.ForeignKey(Role, on_delete=models.PROTECT, blank=True, null=True)
+    facility = models.ForeignKey(Facility, on_delete=models.PROTECT, blank=True, null=True) # superuserやstaffは施設に所属しないため、blank,null=Trueにする
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     USERNAME_FIELD = "username"
