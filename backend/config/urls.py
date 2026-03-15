@@ -29,4 +29,5 @@ urlpatterns = [
     path('api/token/blacklist/', TokenBlacklistView.as_view(), name='token_blacklist'),
     path('api/', include('apps.patients.urls')),
     path('api/', include('apps.facilities.urls')),
+    path('api/', include('apps.master.urls')),
 ]
