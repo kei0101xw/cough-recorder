@@ -128,3 +128,29 @@ class RecordingSerializer(serializers.ModelSerializer):
             )
 
         return recording
+    
+    def update(self, instance, validated_data):
+        condition_data = validated_data.pop('recording_conditions', None)
+        symptom_data = validated_data.pop('recording_symptoms', None)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if condition_data is not None:
+            instance.recording_conditions.all().delete()
+            for condition in condition_data:
+                RecordingCondition.objects.create(
+                    recording=instance,
+                    **condition
+                )
+        
+        if symptom_data is not None:
+            instance.recording_symptoms.all().delete()
+            for symptom in symptom_data:
+                RecordingSymptom.objects.create(
+                    recording=instance,
+                    **symptom
+                )
+        
+        return instance
