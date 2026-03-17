@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Recording, RecordingCondition, RecordingSymptom
 from apps.patients.serializers import PatientSerializer
 from apps.patients.models import Patient
+from django.db import transaction
 
 
 class RecordingConditionSerializer(serializers.ModelSerializer):
@@ -109,6 +110,7 @@ class RecordingSerializer(serializers.ModelSerializer):
 
         return patient
     
+    @transaction.atomic
     def create(self, validated_data):
         conditions_data = validated_data.pop('recording_conditions', [])
         symptoms_data = validated_data.pop('recording_symptoms', [])
@@ -129,6 +131,7 @@ class RecordingSerializer(serializers.ModelSerializer):
 
         return recording
     
+    @transaction.atomic
     def update(self, instance, validated_data):
         condition_data = validated_data.pop('recording_conditions', None)
         symptom_data = validated_data.pop('recording_symptoms', None)
