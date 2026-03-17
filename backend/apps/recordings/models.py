@@ -28,7 +28,7 @@ class Recording(models.Model):
 
 
 class RecordingCondition(models.Model):
-    recording = models.ForeignKey(Recording, on_delete=models.CASCADE)
+    recording = models.ForeignKey(Recording, on_delete=models.CASCADE, related_name='recording_conditions')
     condition = models.ForeignKey(Condition, on_delete=models.CASCADE)
     other_condition = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -51,7 +51,7 @@ class RecordingCondition(models.Model):
 
 
 class RecordingSymptom(models.Model):
-    recording = models.ForeignKey(Recording, on_delete=models.CASCADE)
+    recording = models.ForeignKey(Recording, on_delete=models.CASCADE, related_name='recording_symptoms')
     symptom = models.ForeignKey(Symptom, on_delete=models.CASCADE)
     other_symptom = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
