@@ -20,7 +20,12 @@ class PatientViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(facility=self.request.user.facility)
-
+    
+    def destroy(self, request, *args, **kwargs):
+        if not request.user.is_superuser and not request.user.is_staff:
+            return Response({"detail": "削除は禁止されています"}, status=status.HTTP_403_FORBIDDEN)
+        
+        return super().destroy(request, *args, **kwargs)
 
     # TODO: adminユーザーがデータを取得する際に複数患者データが取れる問題を修正する
     @action(detail = False, methods=['get'], url_path='search')
