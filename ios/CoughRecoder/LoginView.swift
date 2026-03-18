@@ -5,10 +5,10 @@ struct LoginView: View {
     @EnvironmentObject var auth: AuthManager
     @Environment(\.horizontalSizeClass) private var hSize
 
-    @State private var email = ""
+    @State private var username = ""
     @State private var password = ""
     @FocusState private var focusField: Field?
-    enum Field { case email, pass }
+    enum Field { case username, pass }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -18,11 +18,10 @@ struct LoginView: View {
 
             Form {
                 Section(header:
-                    Text("メールアドレス")
+                    Text("ユーザーID")
                         .font(.system(size: AppUI.sectionHeaderFontSize(hSize: hSize)))
                 ) {
-                    TextField("メールアドレス", text: $email)
-                        .keyboardType(.emailAddress)
+                    TextField("ユーザーID", text: $username)
                         .textInputAutocapitalization(.none)
                         .autocorrectionDisabled()
                         .textContentType(.username)
@@ -63,7 +62,7 @@ struct LoginView: View {
 
                 Button {
                     auth.signIn(
-                        email: email.trimmingCharacters(in: .whitespaces),
+                        username: username.trimmingCharacters(in: .whitespaces),
                         password: password
                     )
                 } label: {
@@ -72,16 +71,16 @@ struct LoginView: View {
                         .frame(height: AppUI.buttonHeight(hSize: hSize))
                         .font(.system(size: AppUI.buttonFontSize(hSize: hSize)))
                         .foregroundColor(.white)
-                        .background((!email.isEmpty && !password.isEmpty) ? Color.blue : Color.blue.opacity(0.4))
+                        .background((!username.isEmpty && !password.isEmpty) ? Color.blue : Color.blue.opacity(0.4))
                         .cornerRadius(10)
                 }
-                .disabled(email.isEmpty || password.isEmpty)
+                .disabled(username.isEmpty || password.isEmpty)
             }
             .padding()
         }
         .onAppear {
             auth.clearError()
-            focusField = .email
+            focusField = .username
         }
         .navigationBarBackButtonHidden(true)
     }
