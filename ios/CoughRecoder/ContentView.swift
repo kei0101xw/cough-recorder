@@ -42,7 +42,7 @@ struct ContentView: View {
                         Rectangle()
                             .fill(Color.white)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 250)
+                            .frame(height: 300)
                             .clipShape(.rect(
                                 topLeadingRadius: 20,
                                 bottomLeadingRadius: 0,
@@ -97,30 +97,46 @@ struct ContentView: View {
                                                     alignment: .trailing
                                                 )
 
-                                                VStack {
-                                                    Button {
-                                                        navigationPath.append("CoughLog")
-                                                    } label: {
-                                                        HStack(spacing: 20)  {
-                                                            Text("咳記録ログ")
-                                                                .font(.system(size: AppUI.buttonFontSize(hSize:  hSize))).bold()
-                                                            Image(
-                                                                systemName: "list.bullet.rectangle.fill"
-                                                            )
+                                                Button {
+                                                    navigationPath.append("Patient")
+                                                } label: {
+                                                    HStack(spacing: 20) {
+                                                        Text("患者情報")
+                                                            .font(.system(size: AppUI.buttonFontSize(hSize: hSize))).bold()
+                                                        Image(systemName: "person.text.rectangle.fill")
                                                             .resizable()
                                                             .scaledToFit()
                                                             .frame(height: 15)
-                                                        }
-                                                        .frame(
-                                                            width: UIScreen.main.bounds.width / 1.5
-                                                        )
-                                                        .frame(height: AppUI.buttonHeight(hSize: hSize))
-                                                        .foregroundColor(
-                                                            Color.primary.opacity(0.7)
-                                                        )
-                                                        .background(Color(.systemGray5))
-                                                        .cornerRadius(15)
                                                     }
+                                                    .frame(width: UIScreen.main.bounds.width / 1.5)
+                                                    .frame(height: AppUI.buttonHeight(hSize: hSize))
+                                                    .foregroundColor(Color.primary.opacity(0.7))
+                                                    .background(Color(.systemGray5))
+                                                    .cornerRadius(15)
+                                                }
+
+                                                Button {
+                                                    navigationPath.append("CoughLog")
+                                                } label: {
+                                                    HStack(spacing: 20)  {
+                                                        Text("咳記録ログ")
+                                                            .font(.system(size: AppUI.buttonFontSize(hSize:  hSize))).bold()
+                                                        Image(
+                                                            systemName: "list.bullet.rectangle.fill"
+                                                        )
+                                                        .resizable()
+                                                        .scaledToFit()
+                                                        .frame(height: 15)
+                                                    }
+                                                    .frame(
+                                                        width: UIScreen.main.bounds.width / 1.5
+                                                    )
+                                                    .frame(height: AppUI.buttonHeight(hSize: hSize))
+                                                    .foregroundColor(
+                                                        Color.primary.opacity(0.7)
+                                                    )
+                                                    .background(Color(.systemGray5))
+                                                    .cornerRadius(15)
                                                 }
                                             }
                                             else {
@@ -162,6 +178,12 @@ struct ContentView: View {
                         navigationPath: $navigationPath
                     )
                     case "PatientInfoForm": PatientInfoFormView(
+                        navigationPath: $navigationPath
+                    )
+                    case "Patient": PatientView(
+                        navigationPath: $navigationPath
+                    )
+                    case "PatientRegistration": PatientRegistrationView(
                         navigationPath: $navigationPath
                     )
                     case "GenderAgeForm": GenderAgeFormView(
@@ -305,30 +327,50 @@ struct ContentView: View {
                                                     alignment: .trailing
                                                 )
 
-                                                VStack {
-                                                    Button {
-                                                        navigationPath.append("CoughLog")
-                                                    } label: {
-                                                        HStack(spacing: 20)  {
-                                                            Text("咳記録ログ")
-                                                                .font(.system(size: 30)).bold()
-                                                            Image(
-                                                                systemName: "list.bullet.rectangle.fill"
-                                                            )
+                                                Button {
+                                                    navigationPath.append("Patient")
+                                                } label: {
+                                                    HStack(spacing: 20) {
+                                                        Text("患者情報")
+                                                            .font(.system(size: 30)).bold()
+                                                        Image(systemName: "person.text.rectangle.fill")
                                                             .resizable()
                                                             .scaledToFit()
                                                             .frame(height: 30)
-                                                        }
-                                                        .frame(
-                                                            width: UIScreen.main.bounds.width / 2
-                                                        )
-                                                        .frame(height: 80)
-                                                        .foregroundColor(
-                                                            Color.primary.opacity(0.7)
-                                                        )
-                                                        .background(Color(.systemGray5))
-                                                        .cornerRadius(20)
                                                     }
+                                                    .frame(
+                                                        width: UIScreen.main.bounds.width / 2
+                                                    )
+                                                    .frame(height: 80)
+                                                    .foregroundColor(
+                                                        Color.primary.opacity(0.7)
+                                                    )
+                                                    .background(Color(.systemGray5))
+                                                    .cornerRadius(20)
+                                                }
+
+                                                Button {
+                                                    navigationPath.append("CoughLog")
+                                                } label: {
+                                                    HStack(spacing: 20)  {
+                                                        Text("咳記録ログ")
+                                                            .font(.system(size: 30)).bold()
+                                                        Image(
+                                                            systemName: "list.bullet.rectangle.fill"
+                                                        )
+                                                        .resizable()
+                                                        .scaledToFit()
+                                                        .frame(height: 30)
+                                                    }
+                                                    .frame(
+                                                        width: UIScreen.main.bounds.width / 2
+                                                    )
+                                                    .frame(height: 80)
+                                                    .foregroundColor(
+                                                        Color.primary.opacity(0.7)
+                                                    )
+                                                    .background(Color(.systemGray5))
+                                                    .cornerRadius(20)
                                                 }
                                             }
                                             else {
@@ -368,6 +410,12 @@ struct ContentView: View {
                         navigationPath: $navigationPath
                     )
                     case "PatientInfoForm": PatientInfoFormView(
+                        navigationPath: $navigationPath
+                    )
+                    case "Patient": PatientView(
+                        navigationPath: $navigationPath
+                    )
+                    case "PatientRegistration": PatientRegistrationView(
                         navigationPath: $navigationPath
                     )
                     case "GenderAgeForm": GenderAgeFormView(
