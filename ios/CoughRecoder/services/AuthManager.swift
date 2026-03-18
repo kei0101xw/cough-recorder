@@ -119,6 +119,20 @@ final class AuthManager: ObservableObject {
         return s.accessToken
     }
 
+    /// 期限切れなら更新して、有効なアクセストークンを返す
+    func validAccessToken() async throws -> String {
+        guard var s = session else {
+            throw AuthError.invalidRefresh
+        }
+
+        if s.isExpired {
+            s = try await refreshToken(s.refreshToken)
+            save(session: s)
+        }
+
+        return s.accessToken
+    }
+
     // MARK: - Private
 
     private func save(session: BackendSession) {
