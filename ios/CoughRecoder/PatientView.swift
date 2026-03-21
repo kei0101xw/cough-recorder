@@ -48,15 +48,21 @@ enum PatientAPIError: Error, LocalizedError {
 struct PatientView: View {
     @Binding var navigationPath: [String]
     @EnvironmentObject var auth: AuthManager
+    @EnvironmentObject var session: RecordingSession
     @Environment(\.horizontalSizeClass) private var hSize
     @State private var patients: [Patient] = []
     @State private var isInitialLoading = false
     @State private var isRefreshing = false
     @State private var errorMessage: String?
+    @State private var selectedPatientID: Int?
+
+    private var isSelectionMode: Bool {
+        session.recordingURL != nil
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            Text("患者情報一覧")
+            Text(isSelectionMode ? "患者を選択してください" : "患者情報一覧")
                 .font(.system(size: AppUI.titleFontSize(hSize: hSize), weight: .regular))
                 .padding(.vertical, 12)
 
@@ -118,17 +124,7 @@ struct PatientView: View {
                             Divider()
 
                             List(patients) { patient in
-                                HStack(spacing: 12) {
-                                    Text(patient.patientCode)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                    Text(patient.biologicalSex)
-                                        .frame(width: 60, alignment: .center)
-                                    Text(patient.birthDate)
-                                        .frame(width: 110, alignment: .trailing)
-                                }
-                                .font(.system(size: AppUI.sentenceFontSize(hSize: hSize)))
-                                .padding(.vertical, 6)
-                                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                                patientRow(patient)
                             }
                             .listStyle(.plain)
                             .refreshable {
@@ -165,20 +161,53 @@ struct PatientView: View {
 
             Divider()
 
-            Button {
-                if !navigationPath.isEmpty {
-                    navigationPath.removeLast()
+            if isSelectionMode {
+                HStack {
+                    Button {
+                        if !navigationPath.isEmpty {
+                            navigationPath.removeLast()
+                        }
+                    } label: {
+                        Text("戻る")
+                            .frame(maxWidth: .infinity)
+                            .frame(height: AppUI.buttonHeight(hSize: hSize))
+                            .font(.system(size: AppUI.buttonFontSize(hSize: hSize)))
+                            .padding(.horizontal)
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
+                    }
+
+                    Button {
+                        proceedWithSelectedPatient()
+                    } label: {
+                        Text("次へ")
+                            .frame(maxWidth: .infinity)
+                            .frame(height: AppUI.buttonHeight(hSize: hSize))
+                            .font(.system(size: AppUI.buttonFontSize(hSize: hSize), weight: .semibold))
+                            .padding(.horizontal)
+                            .background(selectedPatientID == nil ? Color.blue.opacity(0.4) : Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                    .disabled(selectedPatientID == nil)
                 }
-            } label: {
-                Text("ホームへ戻る")
-                    .frame(width: UIScreen.main.bounds.width / 2)
-                    .frame(height: AppUI.buttonHeight(hSize: hSize))
-                    .font(.system(size: AppUI.buttonFontSize(hSize: hSize)))
-                    .padding(.horizontal)
-                    .background(Color.gray.opacity(0.2))
-                    .cornerRadius(10)
+                .padding()
+            } else {
+                Button {
+                    if !navigationPath.isEmpty {
+                        navigationPath.removeLast()
+                    }
+                } label: {
+                    Text("ホームへ戻る")
+                        .frame(width: UIScreen.main.bounds.width / 2)
+                        .frame(height: AppUI.buttonHeight(hSize: hSize))
+                        .font(.system(size: AppUI.buttonFontSize(hSize: hSize)))
+                        .padding(.horizontal)
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(10)
+                }
+                .padding()
             }
-            .padding()
         }
         .task {
             await loadPatients(showInitialLoader: true)
@@ -247,9 +276,90 @@ struct PatientView: View {
 
         throw PatientAPIError.invalidResponse
     }
+
+    @ViewBuilder
+    private func patientRow(_ patient: Patient) -> some View {
+        let isSelected = selectedPatientID == patient.id
+
+        if isSelectionMode {
+            Button {
+                selectedPatientID = patient.id
+            } label: {
+                rowContent(for: patient)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+            .listRowBackground(isSelected ? Color.blue.opacity(0.12) : Color.clear)
+        } else {
+            rowContent(for: patient)
+                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+        }
+    }
+
+    private func rowContent(for patient: Patient) -> some View {
+        let isSelected = selectedPatientID == patient.id
+
+        return HStack(spacing: 12) {
+            Text(patient.patientCode)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text(displaySex(patient.biologicalSex))
+                .frame(width: 60, alignment: .center)
+            Text(patient.birthDate)
+                .frame(width: 110, alignment: .trailing)
+        }
+        .font(.system(size: AppUI.sentenceFontSize(hSize: hSize)))
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+    }
+
+    private func selectPatient(_ patient: Patient) {
+        session.prepareForPatientSelection()
+        session.id = patient.patientCode
+        session.gender = patient.biologicalSex
+        session.age = age(from: patient.birthDate)
+        navigationPath.append("CurrentSymptomsForm")
+    }
+
+    private func proceedWithSelectedPatient() {
+        guard let selectedPatientID,
+              let patient = patients.first(where: { $0.id == selectedPatientID }) else {
+            return
+        }
+
+        selectPatient(patient)
+    }
+
+    private func displaySex(_ value: String) -> String {
+        switch value.lowercased() {
+        case "man", "male":
+            return "男性"
+        case "woman", "female":
+            return "女性"
+        case "other":
+            return "その他"
+        default:
+            return value
+        }
+    }
+
+    private func age(from birthDate: String) -> Int? {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        guard let date = formatter.date(from: birthDate) else {
+            return nil
+        }
+
+        return Calendar(identifier: .gregorian).dateComponents([.year], from: date, to: Date()).year
+    }
 }
 
 #Preview {
     PatientView(navigationPath: .constant([]))
         .environmentObject(AuthManager.shared)
+        .environmentObject(RecordingSession())
 }

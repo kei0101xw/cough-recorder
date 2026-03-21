@@ -57,4 +57,14 @@ final class RecordingSession: ObservableObject {
         dementiaStatus = ""
         // cooldownUntil は消さない
     }
+
+    func prepareForPatientSelection() {
+        id = ""
+        facility = ""
+        gender = ""
+        age = nil
+        symptoms.removeAll()
+        conditions.removeAll()
+        dementiaStatus = ""
+    }
 }

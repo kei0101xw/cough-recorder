@@ -250,8 +250,9 @@ struct ContentView: View {
                 }
                 .onReceive(importer.$lastImportedURL) { imported in
                     guard let imported else { return }
+                    session.prepareForPatientSelection()
                     session.recordingURL = imported
-                    navigationPath = ["PatientInfoForm"]
+                    navigationPath = ["Patient"]
                 }
             case (.regular):
                 ZStack {
@@ -482,8 +483,9 @@ struct ContentView: View {
                 }
                 .onReceive(importer.$lastImportedURL) { imported in
                     guard let imported else { return }
+                    session.prepareForPatientSelection()
                     session.recordingURL = imported
-                    navigationPath = ["PatientInfoForm"]
+                    navigationPath = ["Patient"]
                 }
             @unknown default:
                 Text("aiueo")
